@@ -51,7 +51,7 @@ class Client():
             values *= 0
         self.stateChange = states
 
-    def setModelParameter(self, states, download):
+    def setModelParameter(self, states):
         self.model.load_state_dict(deepcopy(states))
         self.originalState = deepcopy(states)
         self.model.zero_grad()
