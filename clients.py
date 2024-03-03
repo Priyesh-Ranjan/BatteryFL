@@ -100,8 +100,8 @@ class Client():
         new_dataset = Subset(self.dataLoader.dataset, new_samples)
         if total_quantity > self.top_slice :
             print("Do not have that many samples! Collecting more data")
-            self.collect_data()
-        elif total_quantity > len(new_samples) :
+            while total_quantity > self.top_slice: self.collect_data()
+        if total_quantity > len(new_samples) :
             print("Choosing older samples through ", self.method," method")
             old_indices, old_dataset = self.select_older_data(new_dataset, total_quantity - len(new_samples))
             self.dataset = torch.utils.data.ConcatDataset([old_dataset, new_dataset])
