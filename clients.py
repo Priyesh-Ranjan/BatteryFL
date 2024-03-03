@@ -102,14 +102,14 @@ class Client():
             print("Do not have that many samples! Collecting more data")
             while total_quantity > self.top_slice: self.collect_data()
         if total_quantity > len(new_samples) :
-            print("Choosing older samples through ", self.method," method")
+            print("Choosing older samples through", self.method,"method")
             old_indices, old_dataset = self.select_older_data(new_dataset, total_quantity - len(new_samples))
             self.dataset = torch.utils.data.ConcatDataset([old_dataset, new_dataset])
         else : 
             old_indices = []
             self.dataset = Subset(self.dataLoader.dataset, list(range(self.bottom_slice,self.bottom_slice+total_quantity)))
-        print("In total, client ",self.cid," will train on ", len(self.dataset), " samples")
-        print("Updating Reputation using the ",self.method," method")
+        print("In total, client",self.cid,"will train on", len(self.dataset), "samples")
+        print("Updating Reputation using the",self.method,"method")
         self.update_reputation(np.array(old_indices+new_samples))
 
     def train(self):
@@ -137,7 +137,7 @@ class Client():
         self.loss = loss_sum/len(DataLoader.dataset)
         self.isTrained = True
         self.model.cpu()  ## avoid occupying gpu when idle
-        print("Client trained on ",ind*self.batch_size," samples. Used around ",(ind*self.batch_size)*self.training," battery")
+        print("Client trained on",ind*self.batch_size,"samples. Used around",(ind*self.batch_size)*self.training,"battery")
         print("Average loss on the data = ", self.loss)
         self.battery -= (ind*self.batch_size)*self.training
         
@@ -149,7 +149,7 @@ class Client():
         self.indices.append((start, end))    
         self.top_slice = end; self.bottom_slice = start
         self.battery -= self.collection
-        print("Client collected ",str(end-start)," samples. Total samples = ",self.indices[-1][1])
+        print("Client collected",str(end-start),"samples. Total samples = ",self.indices[-1][1])
         
     def report_battery(self) :
         return self.battery
@@ -237,5 +237,6 @@ class Client():
 
     #         self.test(self.dataLoader)
     def getDelta(self):
+        print("Client",self.cid,"sending model to the server")
         self.battery -= self.upload
         return self.stateChange

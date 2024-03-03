@@ -95,6 +95,7 @@ class Server():
         selectedClients = self.clients
         #quantity = np.random.randint(1000,size=len(selectedClients))
         for i,c in enumerate(selectedClients):
+            print('-----------------------------Client {}-----------------------------'.format(i))
             c.train()
             c.update()
 
@@ -173,7 +174,7 @@ class Server():
         The aggregation rule views the update vectors as stacked vectors (1 by d by n).
         '''
         Delta = deepcopy(self.emptyStates)
-        deltas = [c.getDelta(self.upload) for c in clients]
+        deltas = [c.getDelta() for c in clients]
         vecs = [utils.net2vec(delta) for delta in deltas]
         vecs = [vec for vec in vecs if torch.isfinite(vec).all().item()]
         result = func(torch.stack(vecs, 1).unsqueeze(0))  # input as 1 by d by n
