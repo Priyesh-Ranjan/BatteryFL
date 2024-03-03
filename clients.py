@@ -80,37 +80,39 @@ class Client():
             self.reputation[val] = self.alpha*self.reputation[val] + (1 - self.alpha)*I_vals[idx]
         print("Reputation Updated")    
 
-    def select_older_data(self, new_dataset, old_quantity):
-        counts = dict(Counter(new_dataset.targets))  
+    def select_older_data(self, new_indices, old_quantity):
+        y = np.array([self.dataLoader.dataset.targets[i] for i in new_indices])
+        counts = dict(Counter(y))  
         num_classes = len(counts)
         old_samples = list(range(self.bottom_slice))
-        old_dataset = Subset(self.dataLoader.dataset, old_samples)
+        #old_dataset = Subset(self.dataLoader.dataset, old_samples)
         indices = []
         for c,num in counts.items() :
-            idx = old_dataset.targets == c
+            idx = torch.Tensor([self.dataLoader.dataset.targets[i] for i in old_samples]) == c
+            #idx = old_dataset.targets == c
             r = self.reputation[idx]
             req = max(0, old_quantity/num_classes - num)
             samples = np.random.choice(idx, req, p = np.exp(r*self.gamma)/np.sum(np.exp(r*self.gamma)))
             indices.extend(samples)
         print("From the previous collection ", len(indices), " samples are selected for training")    
-        return indices, Subset(old_dataset, indices)
+        return indices
         
     def select_data(self, total_quantity):   
-        new_samples = list(range(self.bottom_slice,self.top_slice))
-        new_dataset = Subset(self.dataLoader.dataset, new_samples)
+        new_indices = list(range(self.bottom_slice,self.top_slice))
+        #new_dataset = Subset(self.dataLoader.dataset, new_indices)
         if total_quantity > self.top_slice :
             print("Do not have that many samples! Collecting more data")
             while total_quantity > self.top_slice: self.collect_data()
-        if total_quantity > len(new_samples) :
+        if total_quantity > len(new_indices) :
             print("Choosing older samples through", self.method,"method")
-            old_indices, old_dataset = self.select_older_data(new_dataset, total_quantity - len(new_samples))
-            self.dataset = torch.utils.data.ConcatDataset([old_dataset, new_dataset])
+            old_indices = self.select_older_data(new_indices, total_quantity - len(new_indices))
+            self.dataset = Subset(self.dataLoader.dataset, new_indices+old_indices)
         else : 
             old_indices = []
             self.dataset = Subset(self.dataLoader.dataset, list(range(self.bottom_slice,self.bottom_slice+total_quantity)))
         print("In total, client",self.cid,"will train on", len(self.dataset), "samples")
         print("Updating Reputation using the",self.method,"method")
-        self.update_reputation(np.array(old_indices+new_samples))
+        self.update_reputation(np.array(old_indices+new_indices))
 
     def train(self):
         total_quantity = 1500
