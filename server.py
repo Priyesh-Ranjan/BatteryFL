@@ -1,8 +1,6 @@
 from __future__ import print_function
 
 from copy import deepcopy
-import pandas as pd
-#from rules.correlations import C
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import f1_score
 import torch
@@ -10,8 +8,6 @@ import torch.nn.functional as F
 import numpy as np
 
 from utils import utils
-from utils.backdoor_semantic_utils import SemanticBackdoor_Utils
-from utils.backdoor_utils import Backdoor_Utils
 import time
 
 class Server():
@@ -47,13 +43,13 @@ class Server():
 
     def distribute(self):
         for c in self.clients:
-            c.setModelParameter(self.model.state_dict(), self.download)
+            c.setModelParameter(self.model.state_dict())
             
     def collection_function(self):
         batteries = [c.report_battery() for c in self.clients]
         for i, c in enumerate(self.clients):
             if batteries[i] > self.collection :
-                c.collect_data(self.collection_size, self.collection)
+                c.collect_data()
 
     def test(self):
         print("[Server] Start testing \n")
@@ -97,10 +93,9 @@ class Server():
 
     def train(self):
         selectedClients = self.clients
-        quantity = np.random.randint(1000,size=len(selectedClients))
+        #quantity = np.random.randint(1000,size=len(selectedClients))
         for i,c in enumerate(selectedClients):
-            c.select_data(self.iter)
-            c.train(self.iter, quantity[i], self.training)
+            c.train()
             c.update()
 
         if self.isSaveChanges:

@@ -112,8 +112,9 @@ class Client():
         print("Updating Reputation using the ",self.method," method")
         self.update_reputation(np.array(old_indices+new_samples))
 
-    def train(self, epoch, quantity):
-        self.select_data(total_quantity = 1500)
+    def train(self):
+        total_quantity = 1500
+        self.select_data(total_quantity)
         self.model.to(self.device)
         self.model.train()
         print("Starting training")
@@ -121,7 +122,7 @@ class Client():
         ind = 0; loss_sum = 0
         loader = DataLoader(self.dataset, shuffle=True, batch_size=self.batch_size)        
         for batch_index, (data, target) in enumerate(loader):
-            if (batch_index)*self.batch_size < quantity :
+            if (batch_index)*self.batch_size < total_quantity :
                 data = data.to(self.device)
                 #target = torch.tensor(np.array([target])).to(self.device)
                 target = target.to(self.device)
