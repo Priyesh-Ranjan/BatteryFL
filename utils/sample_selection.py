@@ -15,7 +15,7 @@ def Loss(model, dataset, indices, bsz, device, optimizer, criterion):
             optimizer.zero_grad()
             output = model(data)
             loss = criterion(output, target)
-            print(np.shape(loss.item()))
+            print(np.shape(criterion.item()))
             I_vals.extend(loss.item()/np.sum(loss.item()))
     model.cpu()        
     return I_vals
