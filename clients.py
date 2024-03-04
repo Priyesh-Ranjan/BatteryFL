@@ -70,7 +70,7 @@ class Client():
         else : return 1
     
     def update_reputation(self, indices) :
-        shuffled = np.shuffle(indices)
+        shuffled = np.random.shuffle(indices)
         if self.method == 'loss' :
             I_vals = Loss(self.model, self.dataset, shuffled, self.batch_size, self.device, self.optimizer, self.criterion)
         elif self.method == 'tracin' :
@@ -98,21 +98,20 @@ class Client():
         return indices
         
     def select_data(self, total_quantity):   
-        new_indices = list(range(self.bottom_slice,self.top_slice))
         #new_dataset = Subset(self.dataLoader.dataset, new_indices)
         if total_quantity > self.top_slice :
             print("Do not have that many samples! Collecting more data")
             while total_quantity > self.top_slice: self.collect_data()
-        if total_quantity > len(new_indices) :
-            print("Choosing older samples through", self.method,"method")
-            old_indices = self.select_older_data(new_indices, total_quantity - len(new_indices))
-            self.dataset = Subset(self.dataLoader.dataset, new_indices+old_indices)
+        if total_quantity > self.top_slice - self.bottom_slice:
+            old_indices = self.select_older_data(list(range(self.bottom_slice,self.top_slice)), 
+                                                 total_quantity - len(list(range(self.bottom_slice,self.top_slice))))
+            self.dataset = Subset(self.dataLoader.dataset, list(range(self.bottom_slice,self.top_slice))+old_indices)
         else : 
             old_indices = []
             self.dataset = Subset(self.dataLoader.dataset, list(range(self.bottom_slice,self.bottom_slice+total_quantity)))
         print("In total, client",self.cid,"will train on", len(self.dataset), "samples")
         print("Updating Reputation using the",self.method,"method")
-        self.update_reputation(np.array(old_indices+new_indices))
+        self.update_reputation(np.array(old_indices+list(range(self.bottom_slice,self.top_slice))))
 
     def train(self):
         total_quantity = 1500
