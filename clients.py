@@ -81,7 +81,12 @@ class Client():
         print("Reputation Updated")    
 
     def select_older_data(self, new_indices, old_quantity):
-        y = np.array([self.dataLoader[i][1] for i in new_indices])
+        y = self.dataLoader.dataset.get_labels(new_indices)
+        #for i, (data, labels) in enumerate(self.dataLoader):
+        #    if i in new_indices :
+        #        y.extend(labels)
+        #    elif i > max(new_indices): break    
+        #y = np.array([self.dataLoader[i][1] for i in new_indices])
         counts = dict(Counter(y))  
         num_classes = len(counts)
         old_samples = list(range(self.bottom_slice))

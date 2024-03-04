@@ -18,6 +18,10 @@ class Partition(torch.utils.data.Dataset):
     def __getitem__(self, i):
         data_idx = self.index[i]
         return self.data[data_idx]
+    
+    def get_labels(self, entries):
+        indexes = [self.index[i] for i in entries]
+        return np.array([self.data[ind][1] for ind in indexes])
 
 
 class customDataLoader():
