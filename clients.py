@@ -144,13 +144,13 @@ class Client():
         
         
     def collect_data(self):
-        start = self.bottom_slice; end = self.top_slice
+        start = self.top_slice; end = self.top_slice
         for num in range(self.size):
             if np.random.random() <= self.prob: end += 1
         self.indices.append((start, end))    
         self.top_slice = end; self.bottom_slice = start
         self.battery -= self.collection
-        print("Client collected",str(end-start),"samples. Total samples = ",self.indices[-1][1])
+        print("Client collected",str(end-start),"samples. Total samples = ",self.top_slice)
         
     def report_battery(self) :
         return self.battery
