@@ -32,7 +32,7 @@ class Client():
         self.top_slice = 0
         self.bottom_slice = 0
         self.dataset = []
-        #self.losses = []
+        self.losses = []
         self.reputation = np.zeros(len(dataLoader.dataset))
         self.method = method
         self.alpha = 0.5
@@ -110,7 +110,7 @@ class Client():
         else : 
             old_indices = []
             self.dataset = Subset(self.dataLoader.dataset, list(range(self.bottom_slice,self.bottom_slice+total_quantity)))
-        print("In total, client",self.cid,"will train on", len(self.dataset), "samples")
+        print("In total, Client will train on", len(self.dataset), "samples")
         print("Updating Reputation using the",self.method,"method")
         self.update_reputation(np.array(old_indices+list(range(self.bottom_slice,self.top_slice))))
 
@@ -136,11 +136,11 @@ class Client():
                 loss_sum += loss.sum()
                 ind = batch_index
             else : break
-        #self.loss = loss_sum/len(DataLoader.dataset)
+        self.losses.extend(loss_sum/ind*self.batch_size)
         self.isTrained = True
         self.model.cpu()  ## avoid occupying gpu when idle
         print("Client trained on",ind*self.batch_size,"samples. Used around",(ind*self.batch_size)*self.training,"battery")
-        print("Average loss on the data = ", self.loss)
+        print("Average loss on the data = ", self.losses[-1])
         self.battery -= (ind*self.batch_size)*self.training
         
         
