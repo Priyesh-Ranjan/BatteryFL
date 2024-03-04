@@ -7,6 +7,7 @@ def Loss(model, dataset, indices, bsz, device, optimizer, criterion):
     model.to(device)
     model.eval()
     I_vals = []
+    criterion = criterion(reduction='none')
     loader = DataLoader(dataset, shuffle=False, batch_size=bsz)        
     for batch_index, (data, target) in enumerate(loader):
             data = data.to(device)
@@ -14,9 +15,11 @@ def Loss(model, dataset, indices, bsz, device, optimizer, criterion):
             target = target.to(device)
             optimizer.zero_grad()
             output = model(data)
-            loss = criterion(output, target)
+            loss_each = criterion(output, target)
+            loss_all =  torch.mean(loss_each)
+            loss_all.backward()
             print(np.shape(criterion.item()))
-            I_vals.extend(loss.item()/np.sum(loss.item()))
+            I_vals.extend(loss_each.detach()/np.sum(loss_each.detach()))
     model.cpu()        
     return I_vals
 
