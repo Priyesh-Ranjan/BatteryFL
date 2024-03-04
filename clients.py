@@ -133,7 +133,7 @@ class Client():
                 loss = self.criterion(output, target)
                 loss.backward()
                 self.optimizer.step()
-                loss_sum += loss.sum().numpy()
+                loss_sum += loss.sum().detach().numpy()
                 ind = batch_index
             else : break
         self.losses.extend(loss_sum/ind*self.batch_size)
