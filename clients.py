@@ -82,11 +82,6 @@ class Client():
 
     def select_older_data(self, new_indices, old_quantity):
         y = self.dataLoader.dataset.get_labels(new_indices)
-        #for i, (data, labels) in enumerate(self.dataLoader):
-        #    if i in new_indices :
-        #        y.extend(labels)
-        #    elif i > max(new_indices): break    
-        #y = np.array([self.dataLoader[i][1] for i in new_indices])
         counts = dict(Counter(y))  
         num_classes = len(counts)
         old_indices = list(range(self.bottom_slice))
@@ -94,7 +89,7 @@ class Client():
         comp = self.dataLoader.dataset.get_labels(old_indices)
         indices = []
         for c,num in counts.items() :
-            idx = torch.Tensor(comp) == c
+            idx = np.asarray(comp==c).nonzero()
             #idx = old_dataset.targets == c
             r = self.reputation[idx]
             req = max(0, old_quantity/num_classes - num)
