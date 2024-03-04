@@ -81,14 +81,14 @@ class Client():
         print("Reputation Updated")    
 
     def select_older_data(self, new_indices, old_quantity):
-        y = np.array([self.dataLoader.dataset.labels[i] for i in new_indices])
+        y = np.array([self.dataLoader[i][1] for i in new_indices])
         counts = dict(Counter(y))  
         num_classes = len(counts)
         old_samples = list(range(self.bottom_slice))
         #old_dataset = Subset(self.dataLoader.dataset, old_samples)
         indices = []
         for c,num in counts.items() :
-            idx = torch.Tensor([self.dataLoader.dataset.labels[i] for i in old_samples]) == c
+            idx = torch.Tensor([self.dataLoader[i][1] for i in old_samples]) == c
             #idx = old_dataset.targets == c
             r = self.reputation[idx]
             req = max(0, old_quantity/num_classes - num)
