@@ -89,11 +89,12 @@ class Client():
         #y = np.array([self.dataLoader[i][1] for i in new_indices])
         counts = dict(Counter(y))  
         num_classes = len(counts)
-        old_samples = list(range(self.bottom_slice))
+        old_indices = list(range(self.bottom_slice))
         #old_dataset = Subset(self.dataLoader.dataset, old_samples)
+        comp = self.dataLoader.dataset.get_labels(old_indices)
         indices = []
         for c,num in counts.items() :
-            idx = torch.Tensor([self.dataLoader[i][1] for i in old_samples]) == c
+            idx = torch.Tensor(comp) == c
             #idx = old_dataset.targets == c
             r = self.reputation[idx]
             req = max(0, old_quantity/num_classes - num)
