@@ -1,5 +1,5 @@
 import torch
-import torch.nn.functional as F
+import torch.nn as F
 import numpy as np
 from torch.utils.data import TensorDataset, DataLoader, Subset
 
@@ -7,7 +7,7 @@ def Loss(model, dataset, indices, bsz, device, optimizer, criterion):
     model.to(device)
     model.eval()
     I_vals = []
-    criterion = F.cross_entropy(reduction='none')
+    criterion = F.CrossEntropyLoss(reduction='none')
     loader = DataLoader(dataset, shuffle=False, batch_size=bsz)        
     for batch_index, (data, target) in enumerate(loader):
             data = data.to(device)
