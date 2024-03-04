@@ -136,7 +136,7 @@ class Client():
                 loss_sum += loss.sum()
                 ind = batch_index
             else : break
-        self.loss = loss_sum/len(DataLoader.dataset)
+        #self.loss = loss_sum/len(DataLoader.dataset)
         self.isTrained = True
         self.model.cpu()  ## avoid occupying gpu when idle
         print("Client trained on",ind*self.batch_size,"samples. Used around",(ind*self.batch_size)*self.training,"battery")
