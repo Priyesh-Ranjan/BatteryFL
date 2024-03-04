@@ -89,7 +89,7 @@ class Client():
         comp = self.dataLoader.dataset.get_labels(old_indices)
         indices = []
         for c,num in counts.items() :
-            idx = np.asarray(comp==c).nonzero()
+            idx = np.asarray(comp==c).nonzero()[0]
             #idx = old_dataset.targets == c
             r = self.reputation[idx]
             req = max(0, old_quantity/num_classes - num)
