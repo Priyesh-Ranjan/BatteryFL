@@ -18,8 +18,8 @@ def Loss(model, dataset, indices, bsz, device, optimizer, criterion):
             loss_each = criterion(output, target)
             loss_all =  torch.mean(loss_each)
             loss_all.backward()
-            print(np.shape(loss_all.deteach()))
-            I_vals.extend(loss_each.detach()/np.sum(loss_each.detach()))
+            #print(np.shape(loss_each.detach()))
+            I_vals.extend(loss_each.detach().cpu().numpy()/np.sum(loss_each.detach().cpu().numpy()))
     model.cpu()        
     return I_vals
 
