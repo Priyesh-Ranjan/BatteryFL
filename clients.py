@@ -82,13 +82,14 @@ class Client():
 
     def select_older_data(self, new_indices, old_quantity):
         y = self.dataLoader.dataset.get_labels(new_indices)
-        counts = dict(Counter(y))  
+        counts = Counter(y)
         num_classes = len(counts)
         old_indices = list(range(self.bottom_slice))
         #old_dataset = Subset(self.dataLoader.dataset, old_samples)
         comp = self.dataLoader.dataset.get_labels(old_indices)
         indices = []
         for c,num in counts.items() :
+            print(c,num)
             idx = np.asarray(comp==c).nonzero()[0]
             #idx = old_dataset.targets == c
             r = self.reputation[idx]
