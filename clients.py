@@ -14,7 +14,8 @@ from utils.sample_selection import Loss, TracIn
 class Client():
     def __init__(self, cid, battery, model, dataLoader, optimizer, criterion=F.nll_loss, 
                  method = 'loss', device='cpu', inner_epochs=1, batch_size = 64,
-                 upload_battery=3, download_battery=3, collection_battery=2, training_battery=0.002, collection_size=1000, prob = 0.95):
+                 upload_battery=3, download_battery=3, collection_battery=2, training_battery=0.002, collection_size=1000, prob = 0.95,
+                 alpha=0.5, beta=0.5, gamma=0.5, mu=0.5):
         self.cid = cid
         self.prob = prob
         self.battery = battery
@@ -35,9 +36,10 @@ class Client():
         self.losses = []
         self.reputation = np.zeros(len(dataLoader.dataset))
         self.method = method
-        self.alpha = 0.5
-        self.beta = 0.5
-        self.gamma = 10
+        self.alpha = alpha
+        self.beta = beta
+        self.gamma = gamma
+        self.mu = mu
         self.batch_size = batch_size
         self.upload = upload_battery
         self.download = download_battery
@@ -57,15 +59,18 @@ class Client():
         self.model.zero_grad()
         self.battery -= self.download
         
-    #def perform_task(self):
-    #    if not(self.check_diversity) or budget:
-    #        self.collect_data()
-    #    else : 
-    #        self.select_data(quantity)
-    #        self.train(quantity)
+    """def perform_task(self):
+        if not(self.check_diversity) or budget:
+            self.collect_data()
+        else : 
+            self.select_data(quantity)
+            self.train(quantity)"""
+    
                     
     def check_diversity(self):
         if self.dataset == [] :
+            return 0
+        elif self.dataset.get_labels(range(self.top_slice)) :
             return 0
         else : return 1
     
@@ -112,11 +117,13 @@ class Client():
             self.dataset = Subset(self.dataLoader.dataset, list(range(self.bottom_slice,self.bottom_slice+total_quantity)))
         print("In total, Client will train on", len(self.dataset), "samples")
         print("Updating Reputation using the",self.method,"method")
-        self.update_reputation(np.array(old_indices+list(range(self.bottom_slice,self.top_slice))))
+        training_indices = np.array(old_indices+list(range(self.bottom_slice,self.top_slice)))
+        self.update_reputation(training_indices)
+        return training_indices
 
     def train(self):
         total_quantity = 1500
-        self.select_data(total_quantity)
+        training_indices = self.select_data(total_quantity)
         self.model.to(self.device)
         self.model.train()
         print("Starting training")
@@ -136,11 +143,15 @@ class Client():
                 loss_sum += loss.sum().detach().numpy()
                 ind = batch_index
             else : break
-        self.losses.append(loss_sum/ind*self.batch_size)
+        self.losses.append(loss_sum/(ind*self.batch_size))
         self.isTrained = True
         self.model.cpu()  ## avoid occupying gpu when idle
         print("Client trained on",ind*self.batch_size,"samples. Used around",(ind*self.batch_size)*self.training,"battery")
         print("Average loss on the data = ", self.losses[-1])
+        total_indices = np.array(range(self.top_slice))
+        for i in np.delete(total_indices,np.argwhere(np.isin(total_indices, training_indices))) :
+            if self.reputation[i] < self.mu :
+                self.reputation[i] = self.mu*self.reputation[i] + (1 - self.beta)*self.reputation[i]
         self.battery -= (ind*self.batch_size)*self.training
         
         
