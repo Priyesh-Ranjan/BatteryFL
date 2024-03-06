@@ -10,6 +10,7 @@ from sklearn.metrics import confusion_matrix, f1_score
 from torch.utils.data import TensorDataset, DataLoader, Subset
 from collections import Counter
 from utils.sample_selection import Loss, TracIn
+from utils.diversity import Entropy
 
 class Client():
     def __init__(self, cid, battery, model, dataLoader, optimizer, criterion=F.nll_loss, 
@@ -35,7 +36,9 @@ class Client():
         self.dataset = []
         self.losses = []
         self.reputation = np.zeros(len(dataLoader.dataset))
-        self.method = method
+        self.reputation_method = method
+        self.diversity_method = "Entropy"
+        self.convergence_method = "loss"
         self.alpha = alpha
         self.beta = beta
         self.gamma = gamma
@@ -46,6 +49,7 @@ class Client():
         self.collection = collection_battery
         self.training = training_battery
         self.size = collection_size
+        self.threshold = 0.1
 
     def init_stateChange(self):
         states = deepcopy(self.model.state_dict())
@@ -59,27 +63,46 @@ class Client():
         self.model.zero_grad()
         self.battery -= self.download
         
-    """def perform_task(self):
-        if not(self.check_diversity) or budget:
-            self.collect_data()
+    def perform_task(self):
+        #quantity = 0
+        if not(self.check_diversity):
+            while not(self.check_diversity):
+                self.collect_data()
         else : 
-            self.select_data(quantity)
-            self.train(quantity)"""
+            while self.check_convergence() :
+                self.collect_data()
+                self.train()
+            else:
+                self.train()
     
+    def check_convergence(self):
+        if self.convergence_method == "loss" :
+            if len(self.losses) in [0,1] :
+                return 0
+            else:
+                subset = Subset(self.dataLoader.dataset, range(self.top_slice))
+                loss_sum = np.sum(Loss(self.model, subset, self.batch_size, self.device, self.optimizer, self.criterion))
+                if loss_sum <= 1 :
+                    return 1
+                else :
+                    return 0
                     
     def check_diversity(self):
         if self.dataset == [] :
             return 0
-        elif self.dataset.get_labels(range(self.top_slice)) :
-            return 0
-        else : return 1
+        else :
+            if self.diversity_method() == "Entropy":
+                entropy_value = Entropy(self.dataLoader.dataset.get_labels(range(self.bottom_slice,self.top_slice)))
+                if entropy_value >= self.threshold :
+                    return 1
+                else : return 0
     
     def update_reputation(self, indices) :
         shuffled = np.random.permutation(indices)
-        if self.method == 'loss' :
-            I_vals = Loss(self.model, self.dataset, shuffled, self.batch_size, self.device, self.optimizer, self.criterion)
-        elif self.method == 'tracin' :
-            I_vals = TracIn(self.model, self.dataset, shuffled, self.batch_size)
+        if self.reputation_method == 'loss' :
+            I_vals = Loss(self.model, self.dataset, self.batch_size, self.device, self.optimizer, self.criterion)
+        elif self.reputation_method == 'tracin' :
+            I_vals = TracIn(self.model, self.dataset, self.batch_size)
             
         for idx, val in enumerate(shuffled) :    
             self.reputation[val] = self.alpha*self.reputation[val] + (1 - self.alpha)*I_vals[idx]
@@ -116,7 +139,7 @@ class Client():
             old_indices = []
             self.dataset = Subset(self.dataLoader.dataset, list(range(self.bottom_slice,self.bottom_slice+total_quantity)))
         print("In total, Client will train on", len(self.dataset), "samples")
-        print("Updating Reputation using the",self.method,"method")
+        print("Updating Reputation using the",self.reputation_method,"method")
         training_indices = np.array(old_indices+list(range(self.bottom_slice,self.top_slice)))
         self.update_reputation(training_indices)
         return training_indices

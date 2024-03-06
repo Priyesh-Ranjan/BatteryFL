@@ -49,7 +49,7 @@ class Server():
         batteries = [c.report_battery() for c in self.clients]
         for i, c in enumerate(self.clients):
             if batteries[i] > self.collection :
-                c.collect_data()
+                c.collect_data()    
 
     def test(self):
         print("[Server] Start testing \n")
@@ -91,13 +91,16 @@ class Server():
         print(conf.astype(int),"\n")    
         return test_loss, accuracy, f1/c, conf.astype(int)
 
-    def train(self):
+    def do(self):
         selectedClients = self.clients
+        for c in selectedClients:
+            c.setModelParameter(self.model.state_dict())
         #quantity = np.random.randint(1000,size=len(selectedClients))
         for i,c in enumerate(selectedClients):
             print('-----------------------------Client {}-----------------------------'.format(i))
-            c.train()
-            c.update()
+            #c.train()
+            #c.update()
+            c.perform_task()
 
         if self.isSaveChanges:
             self.saveChanges(selectedClients)
