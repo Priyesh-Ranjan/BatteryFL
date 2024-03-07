@@ -67,10 +67,8 @@ class Client():
         return True
         
     def perform_task(self):
-        if not(self.check_diversity()):
             while not(self.check_diversity()):
                 self.collect_data()
-        else : 
             while self.check_convergence() :
                 self.collect_data()
                 self.train()
@@ -92,7 +90,7 @@ class Client():
             print("No data yet. Collecting...")
             return 0
         else :
-            if self.diversity_method() == "Entropy":
+            if self.diversity_method == "Entropy":
                 entropy_value = Entropy(self.dataLoader.dataset.get_labels(range(self.bottom_slice,self.top_slice)))
                 if entropy_value >= self.threshold :
                     print("Data Quality good. Checking convergence on data...")
