@@ -75,6 +75,7 @@ class Client():
             self.train()
         else:
             self.train()
+        self.update()    
     
     def check_convergence(self):
         if self.convergence_method == "loss" :
@@ -274,9 +275,9 @@ class Client():
         for param in self.originalState:
             self.stateChange[param] = newState[param] - self.originalState[param]
         self.isTrained = False
+        print("Client",self.cid,"sending model to the server")
+        self.battery -= self.upload
 
     #         self.test(self.dataLoader)
     def getDelta(self):
-        print("Client",self.cid,"sending model to the server")
-        self.battery -= self.upload
         return self.stateChange
