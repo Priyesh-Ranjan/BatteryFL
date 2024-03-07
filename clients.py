@@ -68,26 +68,39 @@ class Client():
         
     def perform_task(self):
         print('-----------------------------Client {} reporting for duty-----------------------------'.format(self.cid))
-        while not(self.check_diversity()):
+        if self.check_diversity() :
+            if self.check_convergence() :   
+                self.collect_data()
+                self.train(self.inner_epochs)
+            else :
+                self.train(self.inner_epochs)
+        else :
             self.collect_data()
-        while self.check_convergence() :
-            self.collect_data()
-            self.train()
-        else:
-            self.train()
+            self.train(self.inner_epochs)
+        #while not(self.check_diversity()):
+        #    self.collect_data()    
+        #if self.check_convergence() :                             
+        #    while self.check_convergence() == 1 :
+        #        self.collect_data()
+        #        self.train()    
+        #else:
+        #    self.train()
         self.update()    
     
-    def check_convergence(self):
+    def check_convergence(self):                                                            # Returns 1 if model has converged, 0 otherwise
         if self.convergence_method == "loss" :
-            if len(self.losses) :
+            if not(len(self.losses)) :
                 print("No training done yet. Model assumed non-convergent on data")
                 return 0
             else:
                 subset = Subset(self.dataLoader.dataset, range(self.top_slice))
                 loss_sum = np.sum(Loss(self.model, subset, self.batch_size, self.device, self.optimizer, self.criterion))
-                return loss_sum <= 1
+                if loss_sum <= 0.1 :
+                    print("Loss on existing data converged. Need to collect more")
+                    return 1
+                else : return 0
                     
-    def check_diversity(self):
+    def check_diversity(self):                                                               # Returns 1 if data is diverse, 0 otherwise
         if self.top_slice == 0 :
             print("No data yet. Collecting...")
             return 0
@@ -127,7 +140,7 @@ class Client():
             req = max(0, old_quantity/num_classes - num)
             samples = np.random.choice(idx, req, p = np.exp(r/self.gamma)/np.sum(np.exp(r/self.gamma)))
             indices.extend(samples)
-        print("From the previous collection ", len(indices), " samples are selected for training")    
+        print("From the previous collection", len(indices), "samples are selected for training")    
         return indices
         
     def select_data(self, total_quantity):   
@@ -148,7 +161,7 @@ class Client():
         self.update_reputation(training_indices)
         return training_indices
 
-    def train(self):
+    def train(self,inner_epochs):
         total_quantity = 1500
         training_indices = self.select_data(total_quantity)
         self.model.to(self.device)
