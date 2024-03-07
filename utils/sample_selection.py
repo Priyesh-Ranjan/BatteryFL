@@ -9,7 +9,7 @@ def Loss(model, dataset, bsz, device, optimizer, criterion):
     I_vals = []
     loss_all = []
     criterion = F.CrossEntropyLoss(reduction='none')
-    loader = DataLoader(dataset, shuffle=False, batch_size=bsz)        
+    loader = DataLoader(dataset, shuffle=False, batch_size=1)        
     for batch_index, (data, target) in enumerate(loader):
             data = data.to(device)
             #target = torch.tensor(np.array([target])).to(self.device)

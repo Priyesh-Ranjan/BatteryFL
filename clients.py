@@ -87,6 +87,7 @@ class Client():
             else:
                 subset = Subset(self.dataLoader.dataset, range(self.top_slice))
                 _, loss_sum = Loss(self.model, subset, self.batch_size, self.device, self.optimizer, self.criterion)
+                print(loss_sum)
                 if loss_sum <= 0.1 :
                     print("Loss on existing data converged. Need to collect more\n")
                     return 1
