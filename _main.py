@@ -102,11 +102,11 @@ def main(args):
 
         print('\n\n########EPOCH %d ########' % j)
         print('###Model distribution###\n')
-        server.distribute()
+        #server.distribute()
         #         group=Random().sample(range(5),1)
         #group = range(args.num_clients)
         #server.collection_function()
-        server.train()
+        server.do()
         #         server.train_concurrent(group)
         loss, accuracy, F1, conf = server.test()
         writing_function(writer, "test", loss, accuracy, F1, conf, steps)
