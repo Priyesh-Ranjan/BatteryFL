@@ -22,6 +22,7 @@ def Loss(model, dataset, bsz, device, optimizer, criterion):
             #print(np.shape(loss_each.detach()))
             I_vals.extend(loss_each.detach().cpu().numpy()/np.sum(loss_each.detach().cpu().numpy()))
     model.cpu()        
+    print(loss_all)
     return I_vals, np.mean(np.array(loss_all))
 
 

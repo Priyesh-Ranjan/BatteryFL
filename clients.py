@@ -87,8 +87,8 @@ class Client():
             else:
                 subset = Subset(self.dataLoader.dataset, range(self.top_slice))
                 _, loss_sum = Loss(self.model, subset, self.batch_size, self.device, self.optimizer, self.criterion)
-                print(loss_sum)
-                if loss_sum <= 0.1 :
+                print("Loss on all collected data", loss_sum)
+                if loss_sum <= 0.25 :
                     print("Loss on existing data converged. Need to collect more\n")
                     return 1
                 else : 
@@ -97,7 +97,7 @@ class Client():
                     
     def check_diversity(self):                                                               # Returns 1 if data is diverse, 0 otherwise
         if self.top_slice == 0 :
-            print("No data yet. Collecting...")
+            print("No data yet")
             return 0
         else :
             if self.diversity_method == "Entropy":
@@ -191,7 +191,7 @@ class Client():
         
         
     def collect_data(self):
-        print("Collecting data")
+        print("Collecting data...")
         start = self.top_slice; end = self.top_slice
         for num in range(self.size):
             if np.random.random() <= self.prob: end += 1
