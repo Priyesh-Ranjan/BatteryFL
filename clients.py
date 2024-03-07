@@ -67,8 +67,8 @@ class Client():
         return True
         
     def perform_task(self):
-        if not(self.check_diversity):
-            while not(self.check_diversity):
+        if not(self.check_diversity()):
+            while not(self.check_diversity()):
                 self.collect_data()
         else : 
             while self.check_convergence() :
@@ -79,7 +79,8 @@ class Client():
     
     def check_convergence(self):
         if self.convergence_method == "loss" :
-            if len(self.losses) in [0,1] :
+            if len(self.losses) :
+                print("No training done yet. Model assumed non-convergent on data")
                 return 0
             else:
                 subset = Subset(self.dataLoader.dataset, range(self.top_slice))
@@ -88,13 +89,17 @@ class Client():
                     
     def check_diversity(self):
         if self.dataset == [] :
+            print("No data yet. Collecting...")
             return 0
         else :
             if self.diversity_method() == "Entropy":
                 entropy_value = Entropy(self.dataLoader.dataset.get_labels(range(self.bottom_slice,self.top_slice)))
                 if entropy_value >= self.threshold :
+                    print("Data Quality good. Checking convergence on data...")
                     return 1
-                else : return 0
+                else : 
+                    print("Collected data has poor quality. Collecting more...")
+                    return 0
     
     def update_reputation(self, indices) :
         shuffled = np.random.permutation(indices)
@@ -178,6 +183,7 @@ class Client():
         
         
     def collect_data(self):
+        print("Collecting data")
         start = self.top_slice; end = self.top_slice
         for num in range(self.size):
             if np.random.random() <= self.prob: end += 1
