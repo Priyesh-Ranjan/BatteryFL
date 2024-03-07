@@ -88,7 +88,7 @@ class Client():
                 return loss_sum <= 1
                     
     def check_diversity(self):
-        if self.dataset == [] :
+        if self.top_slice == 0 :
             print("No data yet. Collecting...")
             return 0
         else :
