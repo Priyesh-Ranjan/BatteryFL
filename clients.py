@@ -86,7 +86,7 @@ class Client():
                 return 0
             else:
                 subset = Subset(self.dataLoader.dataset, range(self.top_slice))
-                loss_sum = np.sum(Loss(self.model, subset, self.batch_size, self.device, self.optimizer, self.criterion))
+                _, loss_sum = Loss(self.model, subset, self.batch_size, self.device, self.optimizer, self.criterion)
                 if loss_sum <= 0.1 :
                     print("Loss on existing data converged. Need to collect more\n")
                     return 1
@@ -111,9 +111,9 @@ class Client():
     def update_reputation(self, indices) :
         shuffled = np.random.permutation(indices)
         if self.reputation_method == 'loss' :
-            I_vals = Loss(self.model, self.dataset, self.batch_size, self.device, self.optimizer, self.criterion)
+            I_vals, _ = Loss(self.model, self.dataset, self.batch_size, self.device, self.optimizer, self.criterion)
         elif self.reputation_method == 'tracin' :
-            I_vals = TracIn(self.model, self.dataset, self.batch_size)
+            I_vals, _ = TracIn(self.model, self.dataset, self.batch_size)
             
         for idx, val in enumerate(shuffled) :    
             self.reputation[val] = self.alpha*self.reputation[val] + (1 - self.alpha)*I_vals[idx]
