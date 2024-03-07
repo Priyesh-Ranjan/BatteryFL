@@ -77,28 +77,22 @@ class Client():
         else :
             self.collect_data()
             self.train(self.inner_epochs)
-        #while not(self.check_diversity()):
-        #    self.collect_data()    
-        #if self.check_convergence() :                             
-        #    while self.check_convergence() == 1 :
-        #        self.collect_data()
-        #        self.train()    
-        #else:
-        #    self.train()
         self.update()    
     
     def check_convergence(self):                                                            # Returns 1 if model has converged, 0 otherwise
         if self.convergence_method == "loss" :
             if not(len(self.losses)) :
-                print("No training done yet. Model assumed non-convergent on data")
+                print("No training done yet. Model assumed non-convergent on data\n")
                 return 0
             else:
                 subset = Subset(self.dataLoader.dataset, range(self.top_slice))
                 loss_sum = np.sum(Loss(self.model, subset, self.batch_size, self.device, self.optimizer, self.criterion))
                 if loss_sum <= 0.1 :
-                    print("Loss on existing data converged. Need to collect more")
+                    print("Loss on existing data converged. Need to collect more\n")
                     return 1
-                else : return 0
+                else : 
+                    print("Loss not converged yet so training again\n")
+                    return 0
                     
     def check_diversity(self):                                                               # Returns 1 if data is diverse, 0 otherwise
         if self.top_slice == 0 :
@@ -108,10 +102,10 @@ class Client():
             if self.diversity_method == "Entropy":
                 entropy_value = Entropy(self.dataLoader.dataset.get_labels(range(self.bottom_slice,self.top_slice)))
                 if entropy_value >= self.threshold :
-                    print("Data Quality good. Checking convergence on data...")
+                    print("Data Quality good. Checking convergence on data...\n")
                     return 1
                 else : 
-                    print("Collected data has poor quality. Collecting more...")
+                    print("Collected data has poor quality. Collecting more...\n")
                     return 0
     
     def update_reputation(self, indices) :
@@ -123,7 +117,7 @@ class Client():
             
         for idx, val in enumerate(shuffled) :    
             self.reputation[val] = self.alpha*self.reputation[val] + (1 - self.alpha)*I_vals[idx]
-        print("Reputation Updated")    
+        print("Reputation Updated\n")    
 
     def select_older_data(self, new_indices, old_quantity):
         y = self.dataLoader.dataset.get_labels(new_indices)
