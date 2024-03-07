@@ -92,21 +92,16 @@ class Server():
         return test_loss, accuracy, f1/c, conf.astype(int)
 
     def do(self):
-        selectedClients = self.clients
-        for c in selectedClients:
+        selected_clients = [c for c in self.clients if c.participation()]
+        for c in selected_clients:
             c.setModelParameter(self.model.state_dict())
-        #quantity = np.random.randint(1000,size=len(selectedClients))
-        for i,c in enumerate(selectedClients):
-            print('-----------------------------Client {}-----------------------------'.format(i))
-            #c.train()
-            #c.update()
             c.perform_task()
 
         if self.isSaveChanges:
-            self.saveChanges(selectedClients)
-            
+            self.saveChanges(selected_clients)
+
         tic = time.perf_counter()
-        Delta = self.AR(selectedClients)
+        Delta = self.AR(selected_clients)
         toc = time.perf_counter()
         print("\n")
         print("-----------------------------Server-----------------------------")

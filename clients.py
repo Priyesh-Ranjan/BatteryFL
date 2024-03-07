@@ -63,8 +63,10 @@ class Client():
         self.model.zero_grad()
         self.battery -= self.download
         
+    def participation(self):
+        return True
+        
     def perform_task(self):
-        #quantity = 0
         if not(self.check_diversity):
             while not(self.check_diversity):
                 self.collect_data()
@@ -82,10 +84,7 @@ class Client():
             else:
                 subset = Subset(self.dataLoader.dataset, range(self.top_slice))
                 loss_sum = np.sum(Loss(self.model, subset, self.batch_size, self.device, self.optimizer, self.criterion))
-                if loss_sum <= 1 :
-                    return 1
-                else :
-                    return 0
+                return loss_sum <= 1
                     
     def check_diversity(self):
         if self.dataset == [] :
