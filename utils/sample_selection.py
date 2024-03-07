@@ -3,7 +3,7 @@ import torch.nn as F
 import numpy as np
 from torch.utils.data import TensorDataset, DataLoader, Subset
 
-def Loss(model, dataset, indices, bsz, device, optimizer, criterion):
+def Loss(model, dataset, bsz, device, optimizer, criterion):
     model.to(device)
     model.eval()
     I_vals = []
