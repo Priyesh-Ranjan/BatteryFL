@@ -49,7 +49,7 @@ class Client():
         self.collection = collection_battery
         self.training = training_battery
         self.size = collection_size
-        self.threshold = 0.1
+        self.threshold = 0.5
 
     def init_stateChange(self):
         states = deepcopy(self.model.state_dict())
@@ -67,13 +67,14 @@ class Client():
         return True
         
     def perform_task(self):
-            while not(self.check_diversity()):
-                self.collect_data()
-            while self.check_convergence() :
-                self.collect_data()
-                self.train()
-            else:
-                self.train()
+        print('-----------------------------Client {} reporting for duty-----------------------------'.format(self.cid))
+        while not(self.check_diversity()):
+            self.collect_data()
+        while self.check_convergence() :
+            self.collect_data()
+            self.train()
+        else:
+            self.train()
     
     def check_convergence(self):
         if self.convergence_method == "loss" :
