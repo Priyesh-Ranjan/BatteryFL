@@ -220,7 +220,7 @@ class Client():
         
         
     def collect_data(self):
-        while not(self.check_diversity()) and (self.collection_budget<self.size*self.collection):
+        while not(self.check_diversity()) and (self.collection_budget>=self.size*self.collection):
                 print("Collecting data...")
                 start = self.top_slice; end = self.top_slice
                 for num in range(self.size):
