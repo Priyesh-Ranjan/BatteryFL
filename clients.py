@@ -147,7 +147,6 @@ class Client():
     def select_older_data(self):
         y = self.dataLoader.dataset.get_labels(list(range(self.bottom_slice,self.top_slice)))
         counts = Counter(y)
-        print(Counter(y))
         num_classes = len(counts)
         #old_dataset = Subset(self.dataLoader.dataset, old_samples)
         comp = self.dataLoader.dataset.get_labels(list(range(self.bottom_slice)))
@@ -169,7 +168,7 @@ class Client():
             old_indices = []
             self.dataset = Subset(self.dataLoader.dataset, list(range(self.bottom_slice,self.top_slice)))
             #while total_quantity > self.top_slice: self.collect_data()
-        if total_quantity > self.top_slice - self.bottom_slice:
+        elif total_quantity > self.top_slice - self.bottom_slice:
             old_indices = self.select_older_data()
             self.dataset = Subset(self.dataLoader.dataset, list(range(self.bottom_slice,self.top_slice))+old_indices)
         else : 
