@@ -219,7 +219,7 @@ class Client():
             self.model.cpu()  ## avoid occupying gpu when idle
             print("Client trained on",(ind)*self.batch_size,"samples.")
             print(" Used around",(ind*self.batch_size)*self.training,"battery")
-            print("Average loss on the data = ", self.losses[-1])
+            print("Average loss on the data = ", self.losses[-1],"\n")
             total_indices = np.array(range(self.top_slice))
             for i in np.delete(total_indices,np.argwhere(np.isin(total_indices, training_indices))) :
                 if self.reputation[i] < self.mu :
