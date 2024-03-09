@@ -48,7 +48,7 @@ class Client():
         self.download = download_battery
         self.collection = collection_battery
         self.training = training_battery
-        self.size = collection_size
+        self.size = 100
         self.threshold = entropy_threshold
         self.collection_budget = 0
         self.training_budget = 0
@@ -86,7 +86,8 @@ class Client():
             #        self.train()
             self.collect_data()
             self.train()
-            self.update()    
+            if self.isTrained == True : self.update()   
+            else : print("No training done, nothing to upload")
             self.battery += self.training_budget+self.collection_budget
         else :
             print("Client",self.cid,"is out of battery!")
