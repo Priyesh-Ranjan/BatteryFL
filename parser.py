@@ -28,7 +28,7 @@ def parse_args():
     parser.add_argument("--inner_epochs", type=int, default=1)
     parser.add_argument("--upload_battery", type=float, default = 3)
     parser.add_argument("--download_battery", type=float, default = 3)
-    parser.add_argument("--collection_battery", type=float, default = 2)
+    parser.add_argument("--collection_battery", type=float, default = 0.001)
     parser.add_argument("--collection_size", type=int, default = 1000)
     parser.add_argument("--collection_success_chance", type=float, default = 0.95)
     parser.add_argument("--training_battery", type=float, default = 0.002)
