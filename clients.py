@@ -75,15 +75,17 @@ class Client():
             self.collection_budget = 0
             self.training_budget = 0
             self.battery -= (self.training_budget+self.collection_budget)
-            if self.check_diversity() :
-                if self.check_convergence() :   
-                    self.collect_data()
-                    self.train()
-                else :
-                    self.train()
-            else :
-                    self.collect_data()
-                    self.train()
+            #if self.check_diversity() :
+            #    if self.check_convergence() :   
+            #        self.collect_data()
+            #        self.train()
+            #    else :
+            #        self.train()
+            #else :
+            #        self.collect_data()
+            #        self.train()
+            self.collect_data()
+            self.train()
             self.update()    
             self.battery += self.training_budget+self.collection_budget
         else :
