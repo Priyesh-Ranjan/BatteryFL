@@ -15,7 +15,7 @@ from utils.diversity import Entropy
 class Client():
     def __init__(self, cid, battery, model, dataLoader, optimizer, criterion=F.nll_loss, 
                  method = 'loss', device='cpu', inner_epochs=1, batch_size = 64,
-                 upload_battery=3, download_battery=3, collection_battery=2, training_battery=0.002, collection_size=100, prob = 0.95,
+                 upload_battery=3, download_battery=3, collection_battery=0.002, training_battery=0.002, collection_size=100, prob = 0.95,
                  alpha=0.5, beta=0.5, gamma=0.5, mu=0.5, training_size = 100, entropy_threshold = 0.5):
         self.cid = cid
         self.prob = prob
@@ -220,18 +220,18 @@ class Client():
         
         
     def collect_data(self):
-        while not(self.check_diversity()) or (self.collection_budget>=self.size*self.collection):
-            print("Collecting data...")
-            start = self.top_slice; end = self.top_slice
-            for num in range(self.size):
-                if self.check_diversity():
-                    break
-                elif np.random.random() <= self.prob: 
-                    end += 1
-            self.indices.append((start, end))    
-            self.top_slice = end; self.bottom_slice = start
-            self.collection_budget -= self.collection*(self.top_slice - self.bottom_slice)
-            print("Client collected",str(end-start),"samples. Total samples = ",self.top_slice)
+        while not(self.check_diversity()) and (self.collection_budget<self.size*self.collection):
+                print("Collecting data...")
+                start = self.top_slice; end = self.top_slice
+                for num in range(self.size):
+                    if self.check_diversity():
+                        break
+                    elif np.random.random() <= self.prob: 
+                        end += 1
+                self.indices.append((start, end))    
+                self.top_slice = end; self.bottom_slice = start
+                self.collection_budget -= self.collection*(self.top_slice - self.bottom_slice)
+                print("Client collected",str(end-start),"samples. Total samples = ",self.top_slice)
         
     def report_battery(self) :
         return self.battery
