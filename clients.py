@@ -120,7 +120,7 @@ class Client():
                     
     def check_diversity(self):                                                               # Returns 1 if data is diverse, 0 otherwise
         if self.top_slice == 0 :
-            print("No data yet")
+            #print("No data yet")
             return 0
         else :
             if self.diversity_method == "Entropy":
