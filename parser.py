@@ -25,7 +25,7 @@ def parse_args():
     parser.add_argument("--experiment_name", type=str)
     parser.add_argument("--path_to_aggNet", type=str)
     parser.add_argument("--device", type=str, choices=["cuda", "cpu"], default='cuda')
-    parser.add_argument("--inner_epochs", type=int, default=1)
+    #parser.add_argument("--inner_epochs", type=int, default=1)
     parser.add_argument("--upload_battery", type=float, default = 3)
     parser.add_argument("--download_battery", type=float, default = 3)
     parser.add_argument("--collection_battery", type=float, default = 0.001)

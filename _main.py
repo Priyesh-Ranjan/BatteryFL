@@ -80,10 +80,12 @@ def main(args):
             optimizer = optim.SGD(model.parameters(), lr=args.lr, momentum=args.momentum)
         elif args.optimizer == 'Adam':
             optimizer = optim.Adam(model.parameters(), lr=args.lr)
-        client_i = Client(i, battery, model, trainData[i], 
-                          optimizer, criterion, method, device, args.inner_epochs, batch_size = args.batch_size, 
-                          args.upload_battery, args.download_battery, args.collection_battery, args.training_battery, 
-                          args.collection_size, args.collection_success_chance, training_size = args.training_size,
+        client_i = Client(cid = i, battery = battery, model = model, dataLoader = trainData[i], 
+                          optimizer = optimizer, criterion = criterion, reputation_method = method, device = device, 
+                          batch_size = args.batch_size, 
+                          upload_battery = args.upload_battery, download_battery = args.download_battery, 
+                          collection_battery = args.collection_battery, training_battery = args.training_battery, 
+                          collection_size = args.collection_size, collection_prob = args.collection_success_chance, training_size = args.training_size,
                           entropy_threshold = args.entropy_threshold)
         server.attach(client_i)
         #client_i.collect_data(collection = 0)

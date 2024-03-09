@@ -14,11 +14,11 @@ from utils.diversity import Entropy
 
 class Client():
     def __init__(self, cid, battery, model, dataLoader, optimizer, criterion=F.nll_loss, 
-                 method = 'loss', device='cpu', inner_epochs=1, batch_size = 64,
-                 upload_battery=3, download_battery=3, collection_battery=0.002, training_battery=0.002, collection_size=100, prob = 0.95,
+                 reputation_method = 'loss', device='cpu', batch_size = 64,
+                 upload_battery=3, download_battery=3, collection_battery=0.002, training_battery=0.002, collection_size=100, collection_prob = 0.95,
                  alpha=0.5, beta=0.5, gamma=0.5, mu=0.5, training_size = 200, entropy_threshold = 0.4):
         self.cid = cid
-        self.prob = prob
+        self.prob = collection_prob
         self.battery = battery
         self.model = model
         self.dataLoader = dataLoader
@@ -36,9 +36,9 @@ class Client():
         self.dataset = []
         self.losses = []
         self.reputation = np.zeros(len(dataLoader.dataset))
-        self.reputation_method = method
+        self.reputation_method = reputation_method
         self.diversity_method = "Entropy"
-        self.convergence_method = "train"
+        #self.convergence_method = "train"
         self.alpha = alpha
         self.beta = beta
         self.gamma = gamma
