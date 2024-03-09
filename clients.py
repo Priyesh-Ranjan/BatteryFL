@@ -15,8 +15,8 @@ from utils.diversity import Entropy
 class Client():
     def __init__(self, cid, battery, model, dataLoader, optimizer, criterion=F.nll_loss, 
                  method = 'loss', device='cpu', inner_epochs=1, batch_size = 64,
-                 upload_battery=3, download_battery=3, collection_battery=2, training_battery=0.002, collection_size=1000, prob = 0.95,
-                 alpha=0.5, beta=0.5, gamma=0.5, mu=0.5):
+                 upload_battery=3, download_battery=3, collection_battery=2, training_battery=0.002, collection_size=100, prob = 0.95,
+                 alpha=0.5, beta=0.5, gamma=0.5, mu=0.5, training_size = 100, entropy_threshold = 0.5):
         self.cid = cid
         self.prob = prob
         self.battery = battery
@@ -38,7 +38,7 @@ class Client():
         self.reputation = np.zeros(len(dataLoader.dataset))
         self.reputation_method = method
         self.diversity_method = "Entropy"
-        self.convergence_method = "loss"
+        self.convergence_method = "train"
         self.alpha = alpha
         self.beta = beta
         self.gamma = gamma
@@ -49,7 +49,10 @@ class Client():
         self.collection = collection_battery
         self.training = training_battery
         self.size = collection_size
-        self.threshold = 0.5
+        self.threshold = entropy_threshold
+        self.collection_budget = 0
+        self.training_budget = 0
+        self.training_size = training_size
 
     def init_stateChange(self):
         states = deepcopy(self.model.state_dict())
@@ -67,33 +70,51 @@ class Client():
         return True
         
     def perform_task(self):
-        print('-----------------------------Client {} reporting for duty-----------------------------'.format(self.cid))
-        if self.check_diversity() :
-            if self.check_convergence() :   
-                self.collect_data()
-                self.train(self.inner_epochs)
+        if self.battery > 0:
+            print('-----------------------------Client {} reporting for duty-----------------------------'.format(self.cid))
+            self.collection_budget = 0
+            self.training_budget = 0
+            self.battery -= (self.training_budget+self.collection_budget)
+            if self.check_diversity() :
+                if self.check_convergence() :   
+                    self.collect_data()
+                    self.train()
+                else :
+                    self.train()
             else :
-                self.train(self.inner_epochs)
+                    self.collect_data()
+                    self.train()
+            self.update()    
+            self.battery += self.training_budget+self.collection_budget
         else :
-            self.collect_data()
-            self.train(self.inner_epochs)
-        self.update()    
+            print("Client",self.cid,"is out of battery!")
     
     def check_convergence(self):                                                            # Returns 1 if model has converged, 0 otherwise
-        if self.convergence_method == "loss" :
-            if not(len(self.losses)) :
+        if not(len(self.losses)) :
+            print("No training done yet. Model assumed non-convergent on data\n")
+            return 0
+        elif len(self.losses) == 1:
+            return 0
+        elif np.median(self.losses) - self.losses[-1] <= 0.1*self.losses[-1] :                  # This is what I have put as placeholder here
+            print("Loss on existing data converged.")
+            return 1
+        else :
+            return 0
+    """if self.convergence_method == "loss" :
+            if not(len(self.test_losses)) :
                 print("No training done yet. Model assumed non-convergent on data\n")
                 return 0
             else:
-                subset = Subset(self.dataLoader.dataset, range(self.top_slice))
+                #subset = Subset(self.dataLoader.dataset, range(self.top_slice))
+                subset = Subset(self.dataLoader.dataset, list(indices))
                 _, loss_sum = Loss(self.model, subset, self.batch_size, self.device, self.optimizer, self.criterion)
                 print("Loss on all collected data", loss_sum)
-                if loss_sum <= 0.25 :
+                if loss_sum <= self.test_losses[-1] :
                     print("Loss on existing data converged. Need to collect more\n")
                     return 1
                 else : 
                     print("Loss not converged yet so training again\n")
-                    return 0
+                    return 0"""
                     
     def check_diversity(self):                                                               # Returns 1 if data is diverse, 0 otherwise
         if self.top_slice == 0 :
@@ -154,49 +175,60 @@ class Client():
         self.update_reputation(training_indices)
         return training_indices
 
-    def train(self,inner_epochs):
-        total_quantity = 1500
-        training_indices = self.select_data(total_quantity)
-        self.model.to(self.device)
-        self.model.train()
-        print("Starting training")
-        #for e in range(self.inner_epochs):
-        ind = 0; loss_sum = 0
-        loader = DataLoader(self.dataset, shuffle=True, batch_size=self.batch_size)        
-        for batch_index, (data, target) in enumerate(loader):
-            if (batch_index)*self.batch_size < total_quantity :
-                data = data.to(self.device)
-                #target = torch.tensor(np.array([target])).to(self.device)
-                target = target.to(self.device)
-                self.optimizer.zero_grad()
-                output = self.model(data)
-                loss = self.criterion(output, target)
-                loss.backward()
-                self.optimizer.step()
-                loss_sum += loss.sum().detach().numpy()
-                ind = batch_index
-            else : break
-        self.losses.append(loss_sum/(ind*self.batch_size))
-        self.isTrained = True
-        self.model.cpu()  ## avoid occupying gpu when idle
-        print("Client trained on",ind*self.batch_size,"samples. Used around",(ind*self.batch_size)*self.training,"battery")
-        print("Average loss on the data = ", self.losses[-1])
-        total_indices = np.array(range(self.top_slice))
-        for i in np.delete(total_indices,np.argwhere(np.isin(total_indices, training_indices))) :
-            if self.reputation[i] < self.mu :
-                self.reputation[i] = self.mu*self.reputation[i] + (1 - self.beta)*self.reputation[i]
-        self.battery -= (ind*self.batch_size)*self.training
+    def train(self):
+        inner_epochs = int(int(self.training_budget/self.training)/self.training_size)
+        if self.check_convergence() :
+            self.collect_data()
+        print("Starting training")    
+        flag = 0
+        for e in range(inner_epochs):
+            print("Round",e+1)
+            training_indices = self.select_data(self.training_size)
+            loader = DataLoader(Subset(self.dataLoader.dataset,list(training_indices)), shuffle=True, batch_size=self.batch_size)
+            self.model.to(self.device)
+            self.model.train()
+            ind = 0; loss_sum = 0
+            for batch_index, (data, target) in enumerate(loader):
+                if self.training_budget < (self.batch_size)*self.training or self.convergence():
+                    flag = 1
+                    break
+                else : 
+                    data = data.to(self.device)
+                    target = target.to(self.device)
+                    self.optimizer.zero_grad()
+                    output = self.model(data)
+                    loss = self.criterion(output, target)
+                    loss.backward()
+                    self.optimizer.step()
+                    loss_sum += loss.sum().detach().numpy()
+                    ind = batch_index
+                    self.training_budget -= (self.batch_size)*self.training
+                    self.losses.append(loss_sum/(self.batch_size))
+            self.isTrained = True
+            self.model.cpu()  ## avoid occupying gpu when idle
+            print("Client trained on",(ind)*self.batch_size,"samples.")
+            print(" Used around",(ind*self.batch_size)*self.training,"battery")
+            print("Average loss on the data = ", self.losses[-1])
+            total_indices = np.array(range(self.top_slice))
+            for i in np.delete(total_indices,np.argwhere(np.isin(total_indices, training_indices))) :
+                if self.reputation[i] < self.mu :
+                    self.reputation[i] = self.mu*self.reputation[i] + (1 - self.beta)*self.reputation[i]
+            if flag : break
         
         
     def collect_data(self):
-        print("Collecting data...")
-        start = self.top_slice; end = self.top_slice
-        for num in range(self.size):
-            if np.random.random() <= self.prob: end += 1
-        self.indices.append((start, end))    
-        self.top_slice = end; self.bottom_slice = start
-        self.battery -= self.collection
-        print("Client collected",str(end-start),"samples. Total samples = ",self.top_slice)
+        while not(self.check_diversity()) or (self.collection_budget>=self.size*self.collection):
+            print("Collecting data...")
+            start = self.top_slice; end = self.top_slice
+            for num in range(self.size):
+                if self.check_diversity():
+                    break
+                elif np.random.random() <= self.prob: 
+                    end += 1
+            self.indices.append((start, end))    
+            self.top_slice = end; self.bottom_slice = start
+            self.collection_budget -= self.collection*(self.top_slice - self.bottom_slice)
+            print("Client collected",str(end-start),"samples. Total samples = ",self.top_slice)
         
     def report_battery(self) :
         return self.battery
