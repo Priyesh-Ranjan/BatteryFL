@@ -94,7 +94,7 @@ class Client():
     
     def check_convergence(self):                                                            # Returns 1 if model has converged, 0 otherwise
         if not(len(self.losses)) :
-            print("No training done yet. Model assumed non-convergent on data\n")
+            #print("No training done yet. Model assumed non-convergent on data\n")
             return 0
         elif len(self.losses) == 1:
             return 0
@@ -324,7 +324,8 @@ class Client():
         for param in self.originalState:
             self.stateChange[param] = newState[param] - self.originalState[param]
         self.isTrained = False
-        print("Client",self.cid,"sending model to the server")
+        print("Client",self.cid,"sending model to the server \n")
+        print("\n")
         self.battery -= self.upload
 
     #         self.test(self.dataLoader)
