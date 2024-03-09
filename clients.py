@@ -72,8 +72,8 @@ class Client():
     def perform_task(self):
         if self.battery > 0:
             print('-----------------------------Client {} reporting for duty-----------------------------'.format(self.cid))
-            self.collection_budget = 0
-            self.training_budget = 0
+            self.collection_budget = 10
+            self.training_budget = 10
             self.battery -= (self.training_budget+self.collection_budget)
             #if self.check_diversity() :
             #    if self.check_convergence() :   
