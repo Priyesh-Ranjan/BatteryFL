@@ -123,6 +123,7 @@ class Client():
     def select_older_data(self, new_indices, old_quantity):
         y = self.dataLoader.dataset.get_labels(new_indices)
         counts = Counter(y)
+        print(counts)
         num_classes = len(counts)
         old_indices = list(range(self.bottom_slice))
         #old_dataset = Subset(self.dataLoader.dataset, old_samples)
@@ -133,6 +134,10 @@ class Client():
             #idx = old_dataset.targets == c
             r = self.reputation[idx]
             req = max(0, old_quantity/num_classes - num)
+            print(num_classes)
+            print(old_quantity)
+            print(num)
+            print(req)
             samples = np.random.choice(idx, req, p = np.exp(r/self.gamma)/np.sum(np.exp(r/self.gamma)))
             indices.extend(samples)
         print("From the previous collection", len(indices), "samples are selected for training")    
