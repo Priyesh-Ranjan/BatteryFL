@@ -48,7 +48,7 @@ class Client():
         self.download = download_battery
         self.collection = collection_battery
         self.training = training_battery
-        self.size = 100
+        self.size = collection_size
         self.threshold = entropy_threshold
         self.collection_budget = 0
         self.training_budget = 0
@@ -71,7 +71,7 @@ class Client():
         
     def perform_task(self):
         if self.battery > 0:
-            print('-----------------------------Client {} reporting for duty-----------------------------'.format(self.cid))
+            print('-----------------------------Client {}-----------------------------'.format(self.cid))
             self.collection_budget = 10
             self.training_budget = 10
             self.battery -= (self.training_budget+self.collection_budget)
@@ -147,15 +147,19 @@ class Client():
     def select_older_data(self):
         y = self.dataLoader.dataset.get_labels(list(range(self.bottom_slice,self.top_slice)))
         counts = Counter(y)
+        print(counts)
         num_classes = len(counts)
+        print(num_classes)
         #old_dataset = Subset(self.dataLoader.dataset, old_samples)
         comp = self.dataLoader.dataset.get_labels(list(range(self.bottom_slice)))
         indices = []
         for c,num in counts.items() :
             idx = np.asarray(comp==c).nonzero()[0]
+            print(idx)
             #idx = old_dataset.targets == c
             r = self.reputation[idx]
             req = max(0, -(self.top_slice//-num_classes) - num)
+            print(req)
             samples = np.random.choice(idx, req, p = np.exp(r/self.gamma)/np.sum(np.exp(r/self.gamma)))
             indices.extend(samples)
         print("From the previous collection", len(indices), "samples are selected for training")    
