@@ -16,7 +16,7 @@ class Client():
     def __init__(self, cid, battery, model, dataLoader, optimizer, criterion=F.nll_loss, 
                  method = 'loss', device='cpu', inner_epochs=1, batch_size = 64,
                  upload_battery=3, download_battery=3, collection_battery=0.002, training_battery=0.002, collection_size=100, prob = 0.95,
-                 alpha=0.5, beta=0.5, gamma=0.5, mu=0.5, training_size = 100, entropy_threshold = 0.4):
+                 alpha=0.5, beta=0.5, gamma=0.5, mu=0.5, training_size = 200, entropy_threshold = 0.4):
         self.cid = cid
         self.prob = prob
         self.battery = battery
@@ -187,7 +187,7 @@ class Client():
         print("Starting training")    
         flag = 0
         for e in range(inner_epochs):
-            print("Round",e+1)
+            print("Round",e+1,"\n")
             training_indices = self.select_data(self.training_size)
             loader = DataLoader(Subset(self.dataLoader.dataset,list(training_indices)), shuffle=True, batch_size=self.batch_size)
             self.model.to(self.device)
