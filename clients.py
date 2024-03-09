@@ -168,7 +168,7 @@ class Client():
     def select_data(self, total_quantity):   
         #new_dataset = Subset(self.dataLoader.dataset, new_indices)
         if total_quantity > self.top_slice :
-            print("Do not have that many samples! Training on whatever is present.")
+            print("Do not have",total_quantity,"samples! Training on whatever is present.")
             old_indices = []
             self.dataset = Subset(self.dataLoader.dataset, list(range(self.bottom_slice,self.top_slice)))
             training_indices = np.array(old_indices+list(range(self.bottom_slice,self.top_slice)))

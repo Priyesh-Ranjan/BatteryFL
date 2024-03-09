@@ -81,7 +81,7 @@ def main(args):
         elif args.optimizer == 'Adam':
             optimizer = optim.Adam(model.parameters(), lr=args.lr)
         client_i = Client(i, battery, model, trainData[i], 
-                          optimizer, criterion, method, device, args.inner_epochs, args.batch_size, 
+                          optimizer, criterion, method, device, args.inner_epochs, batch_size = args.batch_size, 
                           args.upload_battery, args.download_battery, args.collection_battery, args.training_battery, 
                           args.collection_size, args.collection_success_chance, training_size = args.training_size,
                           entropy_threshold = args.entropy_threshold)
