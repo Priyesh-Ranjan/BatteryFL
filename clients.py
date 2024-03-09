@@ -194,7 +194,7 @@ class Client():
             self.model.train()
             ind = 0; loss_sum = 0
             for batch_index, (data, target) in enumerate(loader):
-                if self.training_budget < (self.batch_size)*self.training or self.convergence():
+                if self.training_budget < (self.batch_size)*self.training or self.check_convergence():
                     flag = 1
                     break
                 else : 
