@@ -127,7 +127,7 @@ class Client():
             if self.diversity_method == "Entropy":
                 entropy_value = Entropy(self.dataLoader.dataset.get_labels(range(self.bottom_slice,self.top_slice)))
                 if entropy_value >= self.threshold :
-                    print("Data Quality good. Checking convergence on data...\n")
+                    #print("Data Quality good. Checking convergence on data...\n")
                     return 1
                 else : 
                     #print("Collected data has poor quality. Collecting more...\n")
@@ -165,8 +165,10 @@ class Client():
     def select_data(self, total_quantity):   
         #new_dataset = Subset(self.dataLoader.dataset, new_indices)
         if total_quantity > self.top_slice :
-            print("Do not have that many samples! Collecting more data")
-            while total_quantity > self.top_slice: self.collect_data()
+            print("Do not have that many samples! Training on whatever is present.")
+            old_indices = []
+            self.dataset = Subset(self.dataLoader.dataset, list(range(self.bottom_slice,self.top_slice)))
+            #while total_quantity > self.top_slice: self.collect_data()
         if total_quantity > self.top_slice - self.bottom_slice:
             old_indices = self.select_older_data()
             self.dataset = Subset(self.dataLoader.dataset, list(range(self.bottom_slice,self.top_slice))+old_indices)
