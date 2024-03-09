@@ -37,6 +37,8 @@ def parse_args():
     parser.add_argument("--beta", type=float, default = 0.5)
     parser.add_argument("--gamma", type=float, default = 0.5)
     parser.add_argument("--mu", type=float, default = 0.5)
+    parser.add_argument("--training_size", type=int, default = 400)
+    parser.add_argument("--entropy_threshold", type=float, default = 0.5)
 
     args = parser.parse_args()
 

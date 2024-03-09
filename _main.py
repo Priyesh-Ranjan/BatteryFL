@@ -83,7 +83,8 @@ def main(args):
         client_i = Client(i, battery, model, trainData[i], 
                           optimizer, criterion, method, device, args.inner_epochs, args.batch_size, 
                           args.upload_battery, args.download_battery, args.collection_battery, args.training_battery, 
-                          args.collection_size, args.collection_success_chance)
+                          args.collection_size, args.collection_success_chance, training_size = args.training_size,
+                          entropy_threshold = args.entropy_threshold)
         server.attach(client_i)
         #client_i.collect_data(collection = 0)
         clients_list.append(client_i)
