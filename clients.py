@@ -173,16 +173,18 @@ class Client():
             print("Do not have that many samples! Training on whatever is present.")
             old_indices = []
             self.dataset = Subset(self.dataLoader.dataset, list(range(self.bottom_slice,self.top_slice)))
+            training_indices = np.array(old_indices+list(range(self.bottom_slice,self.top_slice)))
             #while total_quantity > self.top_slice: self.collect_data()
         elif total_quantity > self.top_slice - self.bottom_slice:
             old_indices = self.select_older_data()
+            training_indices = np.array(old_indices+list(range(self.bottom_slice,self.top_slice)))
             self.dataset = Subset(self.dataLoader.dataset, list(range(self.bottom_slice,self.top_slice))+old_indices)
         else : 
             old_indices = []
+            training_indices = np.array(old_indices+list(range(self.bottom_slice,self.bottom_slice+total_quantity)))
             self.dataset = Subset(self.dataLoader.dataset, list(range(self.bottom_slice,self.bottom_slice+total_quantity)))
         print("In total, Client will train on", len(self.dataset), "samples")
         print("Updating Reputation using the",self.reputation_method,"method")
-        training_indices = np.array(old_indices+list(range(self.bottom_slice,self.top_slice)))
         self.update_reputation(training_indices)
         return training_indices
 
