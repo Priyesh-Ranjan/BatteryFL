@@ -127,7 +127,7 @@ class Client():
             if self.diversity_method == "Entropy":
                 entropy_value = Entropy(self.dataLoader.dataset.get_labels(range(self.bottom_slice,self.top_slice)))
                 if entropy_value >= self.threshold :
-                    #print("Data Quality good. Checking convergence on data...\n")
+                    print("Data Quality good...\n")
                     return 1
                 else : 
                     #print("Collected data has poor quality. Collecting more...\n")
