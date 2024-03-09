@@ -120,22 +120,19 @@ class Client():
             self.reputation[val] = self.alpha*self.reputation[val] + (1 - self.alpha)*I_vals[idx]
         print("Reputation Updated\n")    
 
-    def select_older_data(self, new_indices, old_quantity):
-        y = self.dataLoader.dataset.get_labels(new_indices)
+    def select_older_data(self):
+        y = self.dataLoader.dataset.get_labels(list(range(self.bottom_slice,self.top_slice)))
         counts = Counter(y)
         print(counts)
         num_classes = len(counts)
-        old_indices = list(range(self.bottom_slice))
         #old_dataset = Subset(self.dataLoader.dataset, old_samples)
-        comp = self.dataLoader.dataset.get_labels(old_indices)
+        comp = self.dataLoader.dataset.get_labels(list(range(self.bottom_slice)))
         indices = []
         for c,num in counts.items() :
             idx = np.asarray(comp==c).nonzero()[0]
             #idx = old_dataset.targets == c
             r = self.reputation[idx]
-            req = max(0, old_quantity/num_classes - num)
-            print(num_classes)
-            print(old_quantity)
+            req = max(0, self.top_slice/num_classes - num)
             print(num)
             print(req)
             samples = np.random.choice(idx, req, p = np.exp(r/self.gamma)/np.sum(np.exp(r/self.gamma)))
@@ -149,8 +146,7 @@ class Client():
             print("Do not have that many samples! Collecting more data")
             while total_quantity > self.top_slice: self.collect_data()
         if total_quantity > self.top_slice - self.bottom_slice:
-            old_indices = self.select_older_data(list(range(self.bottom_slice,self.top_slice)), 
-                                                 total_quantity - len(list(range(self.bottom_slice,self.top_slice))))
+            old_indices = self.select_older_data()
             self.dataset = Subset(self.dataLoader.dataset, list(range(self.bottom_slice,self.top_slice))+old_indices)
         else : 
             old_indices = []
