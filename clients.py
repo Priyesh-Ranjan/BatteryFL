@@ -147,6 +147,7 @@ class Client():
     def select_older_data(self):
         y = self.dataLoader.dataset.get_labels(list(range(self.bottom_slice,self.top_slice)))
         counts = Counter(y)
+        print(Counter(y))
         num_classes = len(counts)
         #old_dataset = Subset(self.dataLoader.dataset, old_samples)
         comp = self.dataLoader.dataset.get_labels(list(range(self.bottom_slice)))
@@ -156,9 +157,7 @@ class Client():
             #idx = old_dataset.targets == c
             r = self.reputation[idx]
             req = max(0, -(self.top_slice//-num_classes) - num)
-            if req :
-                samples = np.random.choice(idx, req, p = np.exp(r/self.gamma)/np.sum(np.exp(r/self.gamma)))
-            else : samples = []    
+            samples = np.random.choice(idx, req, p = np.exp(r/self.gamma)/np.sum(np.exp(r/self.gamma)))
             indices.extend(samples)
         print("From the previous collection", len(indices), "samples are selected for training")    
         return indices
@@ -222,8 +221,8 @@ class Client():
         
         
     def collect_data(self):
+        print("Collecting data...")
         while not(self.check_diversity()) and (self.collection_budget>=self.size*self.collection):
-                print("Collecting data...")
                 start = self.top_slice; end = self.top_slice
                 for num in range(self.size):
                     if self.check_diversity():
