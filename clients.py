@@ -130,7 +130,7 @@ class Client():
                     print("Data Quality good. Checking convergence on data...\n")
                     return 1
                 else : 
-                    print("Collected data has poor quality. Collecting more...\n")
+                    #print("Collected data has poor quality. Collecting more...\n")
                     return 0
     
     def update_reputation(self, indices) :
