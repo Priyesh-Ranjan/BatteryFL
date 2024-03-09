@@ -195,7 +195,7 @@ class Client():
         for e in range(inner_epochs):
             print("Round",e+1,"\n")
             training_indices = self.select_data(self.training_size)
-            loader = DataLoader(Subset(self.dataLoader.dataset,list(training_indices)), shuffle=True, batch_size=self.batch_size)
+            loader = DataLoader(self.dataset, shuffle=True, batch_size=self.batch_size)
             self.model.to(self.device)
             self.model.train()
             ind = 0; loss_sum = 0
