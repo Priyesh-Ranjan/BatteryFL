@@ -212,9 +212,9 @@ class Client():
                     loss.backward()
                     self.optimizer.step()
                     loss_sum += loss.sum().detach().numpy()
-                    ind = batch_index
+                    ind += 1
                     self.training_budget -= (self.batch_size)*self.training
-            self.losses.append(loss_sum/(self.batch_size*batch_index))
+            if loss_sum : self.losses.append(loss_sum/(self.batch_size*ind))
             self.isTrained = True
             self.model.cpu()  ## avoid occupying gpu when idle
             print("Client trained on",(ind)*self.batch_size,"samples.")
