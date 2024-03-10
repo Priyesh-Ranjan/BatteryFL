@@ -230,7 +230,7 @@ class Client():
     def collect_data(self):
         while not(self.check_diversity()) and (self.collection_budget>=self.size*self.collection):
                 print("Collecting data...")
-                start = self.top_slice; end = self.top_slice
+                start = self.top_slice
                 for num in range(self.size):
                     if self.check_diversity():
                         break
@@ -239,7 +239,7 @@ class Client():
                 self.indices.append((start, self.top_slice))    
                 self.bottom_slice = start
                 self.collection_budget -= self.collection*(self.top_slice - self.bottom_slice)
-                print("Client collected",str(end-start),"samples. Total samples = ",self.top_slice)
+                print("Client collected",str(self.top_slice-self.bottom_slice),"samples. Total samples = ",self.top_slice)
         
     def report_battery(self) :
         return self.battery
