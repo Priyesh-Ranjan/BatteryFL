@@ -243,6 +243,7 @@ class Client():
                 self.indices.append((start, self.top_slice))    
                 self.bottom_slice = start
                 self.collection_budget -= self.collection*(self.top_slice - self.bottom_slice)
+                print(Counter(self.dataLoader.dataset.get_labels(range(self.top_slice))))
                 print("Client collected",str(self.top_slice-self.bottom_slice),"samples. Total samples = ",self.top_slice)
         
     def report_battery(self) :
