@@ -212,7 +212,7 @@ class Client():
                     loss.backward()
                     self.optimizer.step()
                     loss_sum += loss.sum().detach().numpy()
-                    ind += 1
+                    ind = batch_index
                     self.training_budget -= (self.batch_size)*self.training
             if loss_sum : self.losses.append(loss_sum/(self.batch_size*ind))
             self.isTrained = True
