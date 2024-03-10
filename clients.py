@@ -229,7 +229,7 @@ class Client():
         
     def collect_data(self):
         while not(self.check_diversity()) and (self.collection_budget>=self.size*self.collection):
-                print("Collecting data...")
+                print("Collecting data...(Check diversity function is too slow so it takes a lot of time)")
                 start = self.top_slice
                 for num in range(self.size):
                     if self.check_diversity():
