@@ -98,7 +98,7 @@ class Client():
             return 0
         elif len(self.losses) == 1:
             return 0
-        elif np.median(self.losses) - self.losses[-1] <= 0.1*self.losses[-1] :                  # This is what I have put as placeholder here
+        elif np.median(self.losses) - self.losses[-1] <= 0.1*self.losses[-1] :                  # This is what I have put as placeholder here. We need to change this
             print("Loss on existing data converged.")
             return 1
         else :
@@ -124,8 +124,12 @@ class Client():
             #print("No data yet")
             return 0
         else :
-            if self.diversity_method == "Entropy":
-                entropy_value = Entropy(self.dataLoader.dataset.get_labels(range(self.bottom_slice,self.top_slice)))
+            labels = self.dataLoader.dataset.get_labels(range(self.bottom_slice,self.top_slice))
+            num_labels = set(labels)
+            if num_labels == set(self.dataLoader.dataset.targets):
+                return 0
+            elif self.diversity_method == "Entropy":
+                entropy_value = Entropy(labels)
                 if entropy_value >= self.threshold :
                     print("Data Quality good...\n")
                     return 1
@@ -147,9 +151,7 @@ class Client():
     def select_older_data(self):
         y = self.dataLoader.dataset.get_labels(list(range(self.bottom_slice,self.top_slice)))
         counts = Counter(y)
-        print(counts)
         num_classes = len(counts)
-        print(num_classes)
         #old_dataset = Subset(self.dataLoader.dataset, old_samples)
         comp = self.dataLoader.dataset.get_labels(list(range(self.bottom_slice)))
         indices = []
@@ -159,7 +161,6 @@ class Client():
             #idx = old_dataset.targets == c
             r = self.reputation[idx]
             req = max(0, -(self.top_slice//-num_classes) - num)
-            print(req)
             samples = np.random.choice(idx, req, p = np.exp(r/self.gamma)/np.sum(np.exp(r/self.gamma)))
             indices.extend(samples)
         print("From the previous collection", len(indices), "samples are selected for training")    
