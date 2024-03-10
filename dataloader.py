@@ -95,7 +95,7 @@ class byLabelLoader(customDataLoader):
 
 
 class dirichletLoader(customDataLoader):
-    def __init__(self, size, dataset, alpha=1000, bsz=1):
+    def __init__(self, size, dataset, alpha=0.9, bsz=1):
         # alpha is used in getPartition,
         # and getPartition is used in parent constructor
         # hence need to initialize alpha first
@@ -107,7 +107,7 @@ class dirichletLoader(customDataLoader):
 
         partition_list = [[] for j in range(self.size)]
         self.labels = np.unique(self.dataset.targets).tolist()
-        label = np.random.permutation(self.dataset.targets)
+        label = self.dataset.targets
         label = torch.tensor(np.array(label))
         for i in self.labels:
             label_iloc = (label == i).nonzero(as_tuple=False).squeeze().numpy()
@@ -117,7 +117,7 @@ class dirichletLoader(customDataLoader):
             assignment = np.random.choice(range(self.size), size=len(label_iloc), p=p.tolist())
             part_list = [(label_iloc[(assignment == k)]).tolist() for k in range(self.size)]
             for j in range(self.size):
-                partition_list[j] += part_list[j]
+                partition_list[j] += np.random.permutation(part_list[j])
         return partition_list
 
 
