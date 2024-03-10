@@ -117,7 +117,9 @@ class dirichletLoader(customDataLoader):
             assignment = np.random.choice(range(self.size), size=len(label_iloc), p=p.tolist())
             part_list = [(label_iloc[(assignment == k)]).tolist() for k in range(self.size)]
             for j in range(self.size):
-                partition_list[j] += list(np.random.permutation(part_list[j]))
+                partition_list[j] += part_list[j]
+        for j in range(self.size):
+            np.random.shuffle(partition_list[j])
         return partition_list
 
 
