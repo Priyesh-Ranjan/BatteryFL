@@ -53,6 +53,7 @@ class Client():
         self.collection_budget = 0
         self.training_budget = 0
         self.training_size = training_size
+        self.num_classes = 10
 
     def init_stateChange(self):
         states = deepcopy(self.model.state_dict())
@@ -125,8 +126,7 @@ class Client():
             return 0
         else :
             labels = self.dataLoader.dataset.get_labels(range(self.bottom_slice,self.top_slice))
-            num_labels = set(labels)
-            if num_labels == set(self.dataLoader.dataset.targets):
+            if len(set(labels)) == self.num_classes:
                 return 0
             elif self.diversity_method == "Entropy":
                 entropy_value = Entropy(labels)
