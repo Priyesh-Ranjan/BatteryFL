@@ -125,10 +125,11 @@ class Client():
             #print("No data yet")
             return 0
         else :
-            if len(set(self.dataLoader.dataset.get_labels(range(self.top_slice)))) != self.num_classes:
+            labels = self.dataLoader.dataset.get_labels(range(self.bottom_slice, self.top_slice))
+            if len(set(labels)) != self.num_classes:    # Checking atleast one sample should be from each class
                 return 0
             elif self.diversity_method == "Entropy":
-                entropy_value = Entropy(self.dataLoader.dataset.get_labels(range(self.top_slice)))
+                entropy_value = Entropy(labels)
                 if entropy_value >= self.threshold :
                     print("Data Quality good...\n")
                     return 1
@@ -238,14 +239,14 @@ class Client():
                     elif np.random.random() <= self.prob: 
                         self.top_slice += 1
                         if self.top_slice >= len(self.dataLoader.dataset):
-                            top_slice = len(self.dataLoader.dataset)
+                            self.top_slice = len(self.dataLoader.dataset)
                             print("All the data that could have been collected is collected!")
                             break
-                self.indices.append((start, self.top_slice))    
-                self.bottom_slice = start
                 self.collection_budget -= self.collection*(self.top_slice - self.bottom_slice)
-                print("Samples collected per class:",Counter(self.dataLoader.dataset.get_labels(range(self.top_slice))))
-                print("Client collected",str(self.top_slice-self.bottom_slice),"samples. Total samples = ",self.top_slice)
+                print("Samples collected per class:",Counter(self.dataLoader.dataset.get_labels(range(start,self.top_slice))))
+                print("Client collected",str(self.top_slice-start),"samples. Total samples = ",self.top_slice)
+        self.bottom_slice = start        
+        self.indices.append((self.bottom_slice, self.top_slice))    
         
     def report_battery(self) :
         return self.battery
