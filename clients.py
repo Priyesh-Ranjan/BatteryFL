@@ -160,7 +160,7 @@ class Client():
             #idx = old_dataset.targets == c
             r = self.reputation[idx]
             req = max(0, -(self.top_slice//-num_classes) - num)
-            if idx != [] :
+            if len(idx) :
                 samples = np.random.choice(idx, req, p = np.exp(r/self.gamma)/np.sum(np.exp(r/self.gamma)))
                 indices.extend(samples)
         print("From the previous collection", len(indices), "samples are selected for training")    
