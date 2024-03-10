@@ -125,11 +125,10 @@ class Client():
             #print("No data yet")
             return 0
         else :
-            labels = self.dataLoader.dataset.get_labels(range(self.bottom_slice,self.top_slice))
-            if len(set(labels)) == self.num_classes:
+            if len(set(self.dataLoader.dataset.get_labels(range(self.bottom_slice,self.top_slice)))) != self.num_classes:
                 return 0
             elif self.diversity_method == "Entropy":
-                entropy_value = Entropy(labels)
+                entropy_value = Entropy(self.dataLoader.dataset.get_labels(range(self.bottom_slice,self.top_slice)))
                 if entropy_value >= self.threshold :
                     print("Data Quality good...\n")
                     return 1
