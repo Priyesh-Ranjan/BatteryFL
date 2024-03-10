@@ -235,9 +235,9 @@ class Client():
                     if self.check_diversity():
                         break
                     elif np.random.random() <= self.prob: 
-                        end += 1
-                self.indices.append((start, end))    
-                self.top_slice = end; self.bottom_slice = start
+                        self.top_slice += 1
+                self.indices.append((start, self.top_slice))    
+                self.bottom_slice = start
                 self.collection_budget -= self.collection*(self.top_slice - self.bottom_slice)
                 print("Client collected",str(end-start),"samples. Total samples = ",self.top_slice)
         
