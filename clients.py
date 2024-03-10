@@ -236,6 +236,10 @@ class Client():
                         break
                     elif np.random.random() <= self.prob: 
                         self.top_slice += 1
+                        if self.top_slice >= len(self.dataLoader.dataset):
+                            top_slice = len(self.dataLoader.dataset)
+                            print("All the data that could have been collected is collected!")
+                            break
                 self.indices.append((start, self.top_slice))    
                 self.bottom_slice = start
                 self.collection_budget -= self.collection*(self.top_slice - self.bottom_slice)
