@@ -107,7 +107,7 @@ class dirichletLoader(customDataLoader):
 
         partition_list = [[] for j in range(self.size)]
         self.labels = np.unique(self.dataset.targets).tolist()
-        label = self.dataset.targets
+        label = np.random.permutation(self.dataset.targets)
         label = torch.tensor(np.array(label))
         for i in self.labels:
             label_iloc = (label == i).nonzero(as_tuple=False).squeeze().numpy()
