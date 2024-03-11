@@ -135,7 +135,6 @@ class Server():
                                 break
                 if ND:
                     N.append(c)
-    
             S.extend(N)    
             if len(S) == len(self.clients):
                 break
