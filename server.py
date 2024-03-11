@@ -63,10 +63,6 @@ class Server():
         conf = np.zeros([10,10])
         with torch.no_grad():
             for data, target in self.dataLoader:
-                #target = torch.cuda.FloatTensor(target)
-                #target = F.one_hot(target, num_classes=2)
-                #target = target.type(torch.cuda.FloatTensor)
-                #target = target.unsqueeze(1)
                 data, target = data.to(self.device), target.to(self.device)
                 output = self.model(data)
                 test_loss += self.criterion(output, target, reduction='sum').item()  # sum up batch loss
@@ -74,8 +70,6 @@ class Server():
                     pred = torch.round(torch.sigmoid(output))
                 else:
                     pred = output.argmax(dim=1, keepdim=True)  # get the index of the max log-probability
-                    #target = target.argmax(dim=1, keepdim=True)
-                #pred = output
                 correct += pred.eq(target.view_as(pred)).sum().item()
                 count += pred.shape[0]
                 conf += confusion_matrix(target.cpu(),pred.cpu(), labels = [i for i in range(10)])
@@ -110,7 +104,8 @@ class Server():
     
         return fitness_value
     
-    def f2(self, loss_val, idx):
+    def f2(self, loss, idx):
+        loss_val = np.array(loss)
         if self.iter == 0 or not idx:
             return 1 if self.iter == 0 else 0
     
