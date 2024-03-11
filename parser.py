@@ -39,6 +39,8 @@ def parse_args():
     parser.add_argument("--mu", type=float, default = 0.5)
     parser.add_argument("--training_size", type=int, default = 400)
     parser.add_argument("--entropy_threshold", type=float, default = 0.5)
+    parser.add_argument("--collection_budget", type=float, default = 10)
+    parser.add_argument("--training_budget", type=float, default = 10)
 
     args = parser.parse_args()
 

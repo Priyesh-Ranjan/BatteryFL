@@ -91,8 +91,57 @@ class Server():
         print(conf.astype(int),"\n")    
         return test_loss, accuracy, f1/c, conf.astype(int)
 
+    def f1(self, battery_current, battery_future, idx):
+        if len(idx) == 0:
+            return 0
+        C = len(battery_current)
+        left = np.delete(np.array(range(C)),idx)
+        return (np.sum(battery_current[left] + battery_future[idx]))**2/(np.sum(battery_current[left]**2) + np.sum(battery_future[idx]**2))*1/C
+
+    def f2(self, loss_val, idx):
+        if self.iter == 0 :
+            return 1
+        if len(idx) == 0:
+            return 0
+        return np.sum(loss_val[loss_val[idx]>= 0])/np.sum(np.array(loss_val[loss_val >= 0]))
+
     def do(self):
-        selected_clients = [c for c in self.clients if c.participation()]
+        num_clients = len(self.clients)
+        loss_val = []; battery1 = []; battery2 = []
+        for c in self.clients :
+            loss, battery_current, battery_future = c.participation()
+            battery2.append(battery_future); battery1.append(battery_current); loss_val.append(loss)
+        S = []
+        while True:
+    # Evaluate the impact of adding each client not in S
+            F1 = [self.f1(loss_val, S + [c]) for c in range(num_clients) if c not in S]
+            F2 = [self.f2(battery1[c], battery2[c], S + [c]) for c in range(num_clients) if c not in S]
+            F = np.minimum(F1, F2)
+            if max(F) <= min(self.f1(loss_val, S), self.f2(battery1, battery2, S)):
+                break
+    
+    # Identifying non-dominated clients to add
+            N = []
+            for c in range(num_clients):
+                if c not in S:
+                    ND = True
+                    for c_prime in range(num_clients):
+                        if c_prime not in S + [c]:
+                            if ((self.f1(loss_val, S + [c_prime]) >= self.f1(loss_val, S + [c]) and
+                         self.f2(battery1[c_prime], battery2[c_prime], S + [c_prime]) >= self.f2(battery1[c], battery2[c], S + [c])) and
+                        (self.f1(loss_val, S + [c_prime]) > self.f1(loss_val, S + [c]) or
+                         self.f2(battery1[c_prime], battery2[c_prime], S + [c_prime]) > self.f2(battery1[c], battery2[c], S + [c]))):
+                                ND = False
+                                break
+                if ND:
+                    N.append(c)
+    
+            S.extend(N)    
+            if len(S) == len(self.clients):
+                break
+
+        selected_clients = [self.clients[c] for c in S]         
+        #selected_clients = [c for c in self.clients if c in S]
         for c in selected_clients:
             c.setModelParameter(self.model.state_dict())
             c.perform_task()

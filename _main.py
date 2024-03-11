@@ -86,9 +86,8 @@ def main(args):
                           upload_battery = args.upload_battery, download_battery = args.download_battery, 
                           collection_battery = args.collection_battery, training_battery = args.training_battery, 
                           collection_size = args.collection_size, collection_prob = args.collection_success_chance, training_size = args.training_size,
-                          entropy_threshold = args.entropy_threshold)
+                          entropy_threshold = args.entropy_threshold, collection_budget = args.collection_budget, training_budget = args.training_budget)
         server.attach(client_i)
-        #client_i.collect_data(collection = 0)
         clients_list.append(client_i)
         print("Client",i,"initialized with", client_i.report_battery(), "battery")
 
@@ -105,10 +104,6 @@ def main(args):
 
         print('\n\n########EPOCH %d ########' % j)
         print('###Model distribution###\n')
-        #server.distribute()
-        #         group=Random().sample(range(5),1)
-        #group = range(args.num_clients)
-        #server.collection_function()
         server.do()
         #         server.train_concurrent(group)
         loss, accuracy, F1, conf = server.test()

@@ -16,7 +16,7 @@ class Client():
     def __init__(self, cid, battery, model, dataLoader, optimizer, criterion=F.nll_loss, 
                  reputation_method = 'loss', device='cpu', batch_size = 64,
                  upload_battery=3, download_battery=3, collection_battery=0.002, training_battery=0.002, collection_size=100, collection_prob = 0.95,
-                 alpha=0.5, beta=0.5, gamma=0.5, mu=0.5, training_size = 200, entropy_threshold = 0.4):
+                 alpha=0.5, beta=0.5, gamma=0.5, mu=0.5, training_size = 200, entropy_threshold = 0.4, collection_budget = 10, training_budget = 10):
         self.cid = cid
         self.prob = collection_prob
         self.battery = battery
@@ -50,8 +50,8 @@ class Client():
         self.training = training_battery
         self.size = collection_size
         self.threshold = entropy_threshold
-        self.collection_budget = 0
-        self.training_budget = 0
+        self.collection_budget = collection_budget
+        self.training_budget = training_budget
         self.training_size = training_size
         self.num_classes = 10
 
@@ -68,13 +68,13 @@ class Client():
         self.battery -= self.download
         
     def participation(self):
-        return True
+        if len(self.losses) : loss_val = self.losses[-1]
+        else : loss_val = -1
+        return loss_val, self.battery, self.battery - (self.collection_budget + self.training_budget)
         
     def perform_task(self):
         if self.battery > 0:
             print('-----------------------------Client {}-----------------------------'.format(self.cid))
-            self.collection_budget = 10
-            self.training_budget = 10
             self.battery -= (self.training_budget+self.collection_budget)
             #if self.check_diversity() :
             #    if self.check_convergence() :   
