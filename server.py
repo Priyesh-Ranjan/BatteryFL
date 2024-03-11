@@ -127,8 +127,8 @@ class Server():
         S = []
         while True:
     # Evaluate the impact of adding each client not in S
-            F1 = [self.f1(battery1, battery2, S + [c]) for c in range(num_clients)]
-            F2 = [self.f2(loss_val, S + [c]) for c in range(num_clients)]
+            F1 = [self.f1(battery1, battery2, list(set(S + [c]))) for c in range(num_clients)]
+            F2 = [self.f2(loss_val, list(set(S + [c]))) for c in range(num_clients)]
             F = np.minimum(F1, F2)
             l = [i for i in range(num_clients) if i not in S]
             if max(F[l]) <= min(self.f2(loss_val, S), self.f1(battery1, battery2, S)):
