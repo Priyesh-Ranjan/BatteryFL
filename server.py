@@ -134,7 +134,8 @@ class Server():
             F1 = [self.f1(battery1, battery2, S + [c]) for c in range(num_clients)]
             F2 = [self.f2(loss_val, S + [c]) for c in range(num_clients)]
             F = np.minimum(F1, F2)
-            if max(F[S]) <= min(self.f1(loss_val, S), self.f2(battery1, battery2, S)):
+            l = [i for i in range(num_clients) if i not in S]
+            if max(F[l]) <= min(self.f1(loss_val, S), self.f2(battery1, battery2, S)):
                 break
     
     # Identifying non-dominated clients to add
