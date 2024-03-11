@@ -140,9 +140,9 @@ class Client():
     def update_reputation(self, indices) :
         shuffled = np.random.permutation(indices)
         if self.reputation_method == 'loss' :
-            I_vals, _ = Loss(self.model, self.dataset, self.batch_size, self.device, self.optimizer, self.criterion)
+            I_vals, _ = Loss(self.model, self.dataset, self.device, self.optimizer, self.criterion)
         elif self.reputation_method == 'tracin' :
-            I_vals, _ = TracIn(self.model, self.dataset, self.batch_size)
+            I_vals, _ = TracIn(self.model, self.dataset, self.device, self.optimizer, self.criterion)
             
         for idx, val in enumerate(shuffled) :    
             self.reputation[val] = self.alpha*self.reputation[val] + (1 - self.alpha)*I_vals[idx]
