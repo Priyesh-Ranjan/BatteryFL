@@ -1,8 +1,7 @@
 # EIFFEL
 Code for the paper - EIFFEL
 
-Need to install tensorboard - pip install tensorboardX
-\
+Need to install tensorboard - pip install tensorboardX<br>
 
 ! git clone repository
 
