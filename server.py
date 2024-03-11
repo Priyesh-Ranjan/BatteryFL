@@ -92,18 +92,35 @@ class Server():
         return test_loss, accuracy, f1/c, conf.astype(int)
 
     def f1(self, battery_current, battery_future, idx):
-        if len(idx) == 0:
+        if not idx:
             return 0
-        C = len(battery_current)
-        left = np.delete(np.array(range(C)),idx)
-        return (np.sum(battery_current[left] + battery_future[idx]))**2/(np.sum(battery_current[left]**2) + np.sum(battery_future[idx]**2))*1/C
-
+    
+        left = [i for i in range(len(battery_current)) if i not in idx]
+        if not left:
+            return 0
+    
+        sum_battery_current_left = sum(battery_current[i] for i in left)
+        sum_battery_future_idx = sum(battery_future[i] for i in idx)
+        sum_battery_current_left_squared = sum(battery_current[i] ** 2 for i in left)
+        sum_battery_future_idx_squared = sum(battery_future[i] ** 2 for i in idx)
+    
+        numerator = (sum_battery_current_left + sum_battery_future_idx) ** 2
+        denominator = sum_battery_current_left_squared + sum_battery_future_idx_squared
+        fitness_value = numerator / denominator / len(battery_current)
+    
+        return fitness_value
+    
     def f2(self, loss_val, idx):
-        if self.iter == 0 :
-            return 1
-        if len(idx) == 0:
+        if self.iter == 0 or not idx:
+            return 1 if self.iter == 0 else 0
+    
+        non_negative_losses_idx = loss_val[idx >= 0]
+        non_negative_losses = loss_val[loss_val >= 0]
+    
+        if not non_negative_losses.any():
             return 0
-        return np.sum(loss_val[loss_val[idx]>= 0])/np.sum(np.array(loss_val[loss_val >= 0]))
+    
+        return np.sum(non_negative_losses_idx) / np.sum(non_negative_losses)
 
     def do(self):
         num_clients = len(self.clients)
@@ -114,32 +131,34 @@ class Server():
         S = []
         while True:
     # Evaluate the impact of adding each client not in S
-            F1 = [self.f1(loss_val, S + [c]) for c in range(num_clients) if c not in S]
-            F2 = [self.f2(battery1[c], battery2[c], S + [c]) for c in range(num_clients) if c not in S]
+            F1 = [self.f1(battery1[c], battery2[c], S + [c]) for c in range(num_clients)]
+            F2 = [self.f2(loss_val, S + [c]) for c in range(num_clients)]
             F = np.minimum(F1, F2)
-            if max(F) <= min(self.f1(loss_val, S), self.f2(battery1, battery2, S)):
+            if max(F[S]) <= min(self.f1(loss_val, S), self.f2(battery1, battery2, S)):
                 break
     
     # Identifying non-dominated clients to add
             N = []
             for c in range(num_clients):
-                if c not in S:
-                    ND = True
-                    for c_prime in range(num_clients):
-                        if c_prime not in S + [c]:
-                            if ((self.f1(loss_val, S + [c_prime]) >= self.f1(loss_val, S + [c]) and
-                         self.f2(battery1[c_prime], battery2[c_prime], S + [c_prime]) >= self.f2(battery1[c], battery2[c], S + [c])) and
-                        (self.f1(loss_val, S + [c_prime]) > self.f1(loss_val, S + [c]) or
-                         self.f2(battery1[c_prime], battery2[c_prime], S + [c_prime]) > self.f2(battery1[c], battery2[c], S + [c]))):
-                                ND = False
-                                break
+                if c in S: break
+                ND = True
+                for c_prime in range(num_clients):
+                    if c_prime in S + [c]: break
+                    if (F1[c_prime] >= F1[c]) and (F2[c_prime] >= F2[c]) and (F1[c_prime] > F1[c] or F2[c_prime] > F2[c]):
+                        ND = False
+                        break
                 if ND:
                     N.append(c)
-            S.extend(N)    
+            if len(N) == 1:
+                S.extend(N)
+            else:
+                max_index = max(N, key=lambda x: max(F1[x], F2[x]))
+                S.append(max_index)
             if len(S) == len(self.clients):
                 break
 
-        selected_clients = [self.clients[c] for c in S]         
+        selected_clients = [self.clients[c] for c in S]   
+        print("Clients selected this round are:",S)
         #selected_clients = [c for c in self.clients if c in S]
         for c in selected_clients:
             c.setModelParameter(self.model.state_dict())
@@ -212,7 +231,7 @@ class Server():
     def FedMedian(self, clients):
         out = self.FedFuncWholeNet(clients, lambda arr: torch.median(arr, dim=-1, keepdim=True)[0])
         return out
-
+    
         ## Helper functions, act as adaptor from aggregation function to the federated learning system##
 
     def FedFuncWholeNet(self, clients, func):
