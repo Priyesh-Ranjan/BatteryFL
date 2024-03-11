@@ -3,7 +3,6 @@ Code for the paper - EIFFEL
 
 Need to install tensorboard - pip install tensorboardX
 \
-\
 
 ! git clone repository
 
