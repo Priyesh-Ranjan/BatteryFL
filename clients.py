@@ -104,37 +104,20 @@ class Client():
             return 1
         else :
             return 0
-    """if self.convergence_method == "loss" :
-            if not(len(self.test_losses)) :
-                print("No training done yet. Model assumed non-convergent on data\n")
-                return 0
-            else:
-                #subset = Subset(self.dataLoader.dataset, range(self.top_slice))
-                subset = Subset(self.dataLoader.dataset, list(indices))
-                _, loss_sum = Loss(self.model, subset, self.batch_size, self.device, self.optimizer, self.criterion)
-                print("Loss on all collected data", loss_sum)
-                if loss_sum <= self.test_losses[-1] :
-                    print("Loss on existing data converged. Need to collect more\n")
-                    return 1
-                else : 
-                    print("Loss not converged yet so training again\n")
-                    return 0"""
-                    
-    def check_diversity(self):                                                               # Returns 1 if data is diverse, 0 otherwise
-        if self.top_slice == 0 :
-            #print("No data yet")
+    
+    def check_diversity(self):
+        if self.top_slice == 0:
             return 0
-        else :
+        else:
             labels = self.dataLoader.dataset.get_labels(range(self.bottom_slice, self.top_slice))
-            if len(set(labels)) != self.num_classes:    # Checking atleast one sample should be from each class
+            if len(set(labels)) != self.num_classes:
                 return 0
             elif self.diversity_method == "Entropy":
                 entropy_value = Entropy(labels)
-                if entropy_value >= self.threshold :
-                    print("Data Quality good...\n")
+                if entropy_value >= self.threshold:
+                    print("Data quality is good.")
                     return 1
-                else : 
-                    #print("Collected data has poor quality. Collecting more...\n")
+                else:
                     return 0
     
     def update_reputation(self, indices) :
