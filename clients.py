@@ -164,7 +164,8 @@ class Client():
         inner_epochs = int(int(self.training_budget/self.training)/self.training_size)
         if self.check_convergence() :
             self.collect_data()
-        print("Starting training")    
+        print("Starting training \n")    
+        print("")
         flag = 0
         for e in range(inner_epochs):
             print("Round",e+1,"\n")
@@ -203,7 +204,7 @@ class Client():
         
     def collect_data(self):
         while not(self.check_diversity()) and (self.collection_budget>=self.size*self.collection):
-                print("Collecting data...(Check diversity function is too slow so it takes a lot of time)")
+                print("Collecting data...(Check diversity function is too slow so it takes a lot of time)\n")
                 start = self.top_slice
                 for num in range(self.size):
                     if self.check_diversity():
