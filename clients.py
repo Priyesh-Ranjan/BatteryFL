@@ -75,23 +75,25 @@ class Client():
             print('-----------------------------Client {}-----------------------------'.format(self.cid))
             self.training_budget = self.initial_training_budget                                           # Training budget allocated every round
             self.collection_budget = self.initial_collection_budget                                       # Collection budget allocated every round
-            #if self.battery >= self.initial_training_budget + self.initial_collection_budget :            # If can do both collection and training then do both
-            self.battery -= (self.training_budget+self.collection_budget)                             # Battery is decreased by that amount
-            self.collect_data()                                                                       # Collect data
-            self.train()                                                                              # Train
-            if self.isTrained == True : self.update()                                                 # If training happened then upload
-            else : print("No training done, nothing to upload")
-            self.battery += self.training_budget+self.collection_budget                               # Leftover battery is added back to the total battery
-           #elif self.battery >= self.initial_training_budget + self.upload:                              # If can only train/collect data + some leftover
-           #     self.collection_budget = self.battery - self.training_budget - self.upload                # leftover becomes collection_budget
-           #     self.train()                                                                              # then train
-           #     self.update()                                                                             # update
-           #     self.battery = 0                                                                          # no battery left anymore
-           # elif self.battery <= self.training_budget + self.upload and self.battery > self.upload:       # else if some leftover battery > upload battery left
-           #     self.training_budget = self.battery - self.upload                                         # leftover is training
-           #     self.train()                                                                              # train
-           #     self.update()                                                                             # update
-           #     self.battery = 0
+            print("Clients training budget is", self.training_budget)
+            print("Clients collection budget is", self.collection_budget)
+            if self.battery >= self.initial_training_budget + self.initial_collection_budget :            # If can do both collection and training then do both
+                self.battery -= (self.training_budget+self.collection_budget)                             # Battery is decreased by that amount
+                self.collect_data()                                                                       # Collect data
+                self.train()                                                                              # Train
+                if self.isTrained == True : self.update()                                                 # If training happened then upload
+                else : print("No training done, nothing to upload")
+                self.battery += self.training_budget+self.collection_budget                               # Leftover battery is added back to the total battery
+            elif self.battery >= self.initial_training_budget + self.upload:                              # If can only train/collect data + some leftover
+                self.collection_budget = self.battery - self.training_budget - self.upload                # leftover becomes collection_budget
+                self.train()                                                                              # then train
+                self.update()                                                                             # update
+                self.battery = 0                                                                          # no battery left anymore
+            elif self.battery <= self.training_budget + self.upload and self.battery > self.upload:       # else if some leftover battery > upload battery left
+                self.training_budget = self.battery - self.upload                                         # leftover is training
+                self.train()                                                                              # train
+                self.update()                                                                             # update
+                self.battery = 0
         else :
             print("Client",self.cid,"is out of battery!")
     
