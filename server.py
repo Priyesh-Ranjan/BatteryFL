@@ -107,7 +107,7 @@ class Server():
     def f2(self, loss, idx):
         loss_val = np.array(loss)
         idx = np.array(idx)
-        if idx == []:
+        if len(idx) == 0:
             return 0
     
         #non_negative_losses_idx = loss_val[idx >= 0]
