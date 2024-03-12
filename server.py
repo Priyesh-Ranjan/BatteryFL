@@ -12,25 +12,25 @@ import time
 
 class Server():
     def __init__(self, model, dataLoader, upload_battery, download_battery, collection_battery, training_battery, collection_size, criterion=F.nll_loss, device='cpu'):
-        self.clients = []
+        self.clients = []                                                      # list of clients
         self.model = model
-        self.dataLoader = dataLoader
-        self.device = device
+        self.dataLoader = dataLoader                                           # for server testing
+        self.device = device                                                   # for server testing
         self.emptyStates = None
         self.init_stateChange()
         self.Delta = None
-        self.iter = 0
-        self.AR = self.FedAvg
+        self.iter = 0                                                          # number of epochs
+        self.AR = self.FedAvg                                                  # Aggregation algorithm
         self.func = torch.mean
         self.isSaveChanges = False
         self.savePath = './AggData'
         self.criterion = criterion
         self.path_to_aggNet = ""
         self.upload = upload_battery
-        self.download = download_battery
-        self.collection = collection_battery
-        self.training = training_battery
-        self.collection_size = collection_size
+        self.download = download_battery                                       # Disregard
+        self.collection = collection_battery                                   # Disregard
+        self.training = training_battery                                       # Disregard
+        self.collection_size = collection_size                                 # Disregard
 
     def init_stateChange(self):
         states = deepcopy(self.model.state_dict())
@@ -40,16 +40,6 @@ class Server():
 
     def attach(self, c):
         self.clients.append(c)
-
-    def distribute(self):
-        for c in self.clients:
-            c.setModelParameter(self.model.state_dict())
-            
-    def collection_function(self):
-        batteries = [c.report_battery() for c in self.clients]
-        for i, c in enumerate(self.clients):
-            if batteries[i] > self.collection :
-                c.collect_data()    
 
     def test(self):
         print("[Server] Start testing \n")
@@ -85,7 +75,7 @@ class Server():
         print(conf.astype(int),"\n")    
         return test_loss, accuracy, f1/c, conf.astype(int)
 
-    def f1(self, battery_current, battery_future, S):
+    def f1(self, battery_current, battery_future, S):                          # Gives the f1 value from the battery levels
         if len(S) == 0 :
             not_S = [i for i in range(len(self.clients))]
         else :     
@@ -110,7 +100,7 @@ class Server():
     
         return fitness_value
     
-    def f2(self, loss, S):
+    def f2(self, loss, S):                                                     # Gives the f2 values from the loss levels
         loss_val = np.array(loss)
         idx = np.array(S)
         if len(S) == 0:
@@ -124,7 +114,7 @@ class Server():
     
         return np.sum(loss_val[S]) / np.sum(loss_val)
 
-    def Select_Clients(self):
+    def Select_Clients(self):                                                  # Select client function (Need to fix some errors)
         num_clients = len(self.clients)
         loss_val = []; battery1 = []; battery2 = []
         for c in self.clients :
@@ -161,18 +151,18 @@ class Server():
         print("Clients selected this round are:",S)
         return selected_clients
 
-    def do(self):
-        #selected_clients = self.Select_Clients()                                             # Trying to debug this still
+    def do(self):                                                              # One round of communication, client training is asynchronous
+        #selected_clients = self.Select_Clients()                              # Trying to debug this still
         selected_clients = self.clients
         for c in selected_clients:
-            c.setModelParameter(self.model.state_dict())
-            c.perform_task()
+            c.setModelParameter(self.model.state_dict())                       # distribute server model to clients
+            c.perform_task()                                                   # selected clients will perform the FSM
 
         if self.isSaveChanges:
             self.saveChanges(selected_clients)
 
         tic = time.perf_counter()
-        Delta = self.AR(selected_clients)
+        Delta = self.AR(selected_clients)                                      # Getting model weights from the clients
         toc = time.perf_counter()
         print("\n")
         print("-----------------------------Server-----------------------------")
@@ -182,7 +172,7 @@ class Server():
             self.model.state_dict()[param] += Delta[param]
         self.iter += 1
 
-    def saveChanges(self, clients):
+    def saveChanges(self, clients):                                            # To save the model as PCA
 
         Delta = deepcopy(self.emptyStates)
         deltas = [c.getDelta() for c in clients]
@@ -220,7 +210,7 @@ class Server():
 
     ## Aggregation functions ##
 
-    def set_AR(self, ar):
+    def set_AR(self, ar):                                                      # Right now only fedavg and fedmedian
         if ar == 'fedavg':
             self.AR = self.FedAvg
         elif ar == 'median':
