@@ -98,11 +98,11 @@ class Client():
         else :
             return 0
     
-    def check_diversity(self):
-        if self.top_slice == 0:
+    def check_diversity(self, bottom_index, top_index):
+        if bottom_index - top_index == 0:
             return 0
         else:
-            labels = self.dataLoader.dataset.get_labels(range(self.top_slice))
+            labels = self.dataLoader.dataset.get_labels(range(bottom_index, top_index))
             if len(set(labels)) != self.num_classes:
                 return 0
             elif self.diversity_method == "Entropy":
@@ -176,7 +176,7 @@ class Client():
     def train(self):
         inner_epochs = int(int(self.training_budget/self.training)/self.training_size)
         if self.check_convergence() :
-            self.collect_data()
+            self.collect_data('train')
         print("Starting training \n")    
         print("")
         flag = 0
@@ -214,11 +214,13 @@ class Client():
                     self.reputation[i] = self.mu*self.reputation[i] + (1 - self.beta)*self.reputation[i]
             if flag : break
         
-    def collect_data(self):
-        while not(self.check_diversity()) and (self.collection_budget>=self.size*self.collection):
+    def collect_data(self, location = 'main'):
+        if location == 'main' : loc = 0
+        elif location == 'train' : loc = self.bottom_slice
+        while not(self.check_diversity(loc, self.top_slice)) and (self.collection_budget>=self.size*self.collection):
                 print("Collecting data...(Check diversity function is too slow so it takes a lot of time)")
                 for num in range(self.size):
-                    if self.check_diversity():
+                    if self.check_diversity(loc, self.top_slice):
                         break
                     elif np.random.random() <= self.prob: 
                         self.top_slice += 1
