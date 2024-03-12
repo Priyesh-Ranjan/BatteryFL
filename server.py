@@ -211,6 +211,7 @@ class Server():
     ## Aggregation functions ##
 
     def set_AR(self, ar):                                                      # Right now only fedavg and fedmedian
+        #TODO: [AA] We need to use FedNova!
         if ar == 'fedavg':
             self.AR = self.FedAvg
         elif ar == 'median':

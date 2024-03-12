@@ -1,0 +1,11 @@
+.vscode
+.venv
+__pycache__/*
+utils/__pycache__/*
+data/*
+logs/*
+```
+
+*.cpython-37.pyc
+*.cpython-38.pyc
+*.cpython-310.pyc
