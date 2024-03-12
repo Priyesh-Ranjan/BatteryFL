@@ -85,29 +85,35 @@ class Server():
         print(conf.astype(int),"\n")    
         return test_loss, accuracy, f1/c, conf.astype(int)
 
-    def f1(self, battery_current, battery_future, idx):
-        if not idx:
-            return 0
+    def f1(self, battery_current, battery_future, S):
+        if len(S) == 0 :
+            not_S = [i for i in range(len(self.clients))]
+        else :     
+            not_S = [i for i in range(len(battery_current)) if i not in S]
+
+        if len(not_S) != 0 :
+            sum_battery_current_not_S_squared = sum(battery_current[i] ** 2 for i in not_S)
+            sum_battery_current_not_S = sum(battery_current[i] for i in not_S)
+        else :
+            sum_battery_current_not_S_squared = 0 ; sum_battery_current_not_S = 0
+        
+        if len(S) != 0 :
+            sum_battery_future_S_squared = sum(battery_future[i] ** 2 for i in S)
+            sum_battery_future_S = sum(battery_future[i] for i in S)
+        else :
+            sum_battery_future_S_squared = 0
+            sum_battery_future_S = 0
     
-        left = [i for i in range(len(battery_current)) if i not in idx]
-        if not left:
-            return 0
-    
-        sum_battery_current_left = sum(battery_current[i] for i in left)
-        sum_battery_future_idx = sum(battery_future[i] for i in idx)
-        sum_battery_current_left_squared = sum(battery_current[i] ** 2 for i in left)
-        sum_battery_future_idx_squared = sum(battery_future[i] ** 2 for i in idx)
-    
-        numerator = (sum_battery_current_left + sum_battery_future_idx) ** 2
-        denominator = sum_battery_current_left_squared + sum_battery_future_idx_squared
+        numerator = (sum_battery_current_not_S + sum_battery_future_S) ** 2
+        denominator = sum_battery_current_not_S_squared + sum_battery_future_S_squared
         fitness_value = numerator / denominator / len(battery_current)
     
         return fitness_value
     
-    def f2(self, loss, idx):
+    def f2(self, loss, S):
         loss_val = np.array(loss)
-        idx = np.array(idx)
-        if len(idx) == 0:
+        idx = np.array(S)
+        if len(S) == 0:
             return 0
     
         #non_negative_losses_idx = loss_val[idx >= 0]
@@ -116,7 +122,7 @@ class Server():
         #if not non_negative_losses.any():
         #    return 0
     
-        return np.sum(loss_val[idx]) / np.sum(loss_val)
+        return np.sum(loss_val[S]) / np.sum(loss_val)
 
     def Select_Clients(self):
         num_clients = len(self.clients)
@@ -149,8 +155,11 @@ class Server():
             if len(N) == 1:
                 S.extend(N)
             else:
-                max_index = max(N, key=lambda x: max(F1[x], F2[x]))
-                S.append(max_index)
+                max_index = np.argmax(F[N])
+                print(F)
+                print(N)
+                print(max_index)
+                S.append(N[max_index])
             if len(S) == len(self.clients):
                 break
 
