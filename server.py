@@ -107,16 +107,16 @@ class Server():
     def f2(self, loss, idx):
         loss_val = np.array(loss)
         idx = np.array(idx)
-        if self.iter == 0 or not idx:
+        if self.iter == 0 or not idx != []:
             return 1 if self.iter == 0 else 0
     
         #non_negative_losses_idx = loss_val[idx >= 0]
-        non_negative_losses = loss_val[loss_val >= 0]
+        #non_negative_losses = loss_val[loss_val >= 0]
     
-        if not non_negative_losses.any():
-            return 0
+        #if not non_negative_losses.any():
+        #    return 0
     
-        return np.sum(non_negative_losses[idx]) / np.sum(non_negative_losses)
+        return np.sum(loss_val[idx]) / np.sum(loss_val)
 
     def Select_Clients(self):
         num_clients = len(self.clients)
