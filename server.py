@@ -132,15 +132,12 @@ class Server():
             battery2.append(battery_future); battery1.append(battery_current); loss_val.append(loss)
         S = []
         while True:
-    # Evaluate the impact of adding each client not in S
             F1 = [self.f1(battery1, battery2, list(set(S + [c]))) for c in range(num_clients)]
             F2 = [self.f2(loss_val, list(set(S + [c]))) for c in range(num_clients)]
             F = np.minimum(F1, F2)
             l = [i for i in range(num_clients) if i not in S]
             if max(F[l]) <= min(self.f2(loss_val, S), self.f1(battery1, battery2, S)):
                 break
-    
-    # Identifying non-dominated clients to add
             N = []
             for c in range(num_clients):
                 if c in S: break
@@ -156,9 +153,6 @@ class Server():
                 S.extend(N)
             else:
                 max_index = np.argmax(F[N])
-                print(F)
-                print(N)
-                print(max_index)
                 S.append(N[max_index])
             if len(S) == len(self.clients):
                 break
@@ -168,8 +162,8 @@ class Server():
         return selected_clients
 
     def do(self):
-        selected_clients = self.Select_Clients()
-        #selected_clients = [c for c in self.clients if c in S]
+        #selected_clients = self.Select_Clients()                                             # Trying to debug this still
+        selected_clients = self.clients
         for c in selected_clients:
             c.setModelParameter(self.model.state_dict())
             c.perform_task()
