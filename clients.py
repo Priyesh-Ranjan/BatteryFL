@@ -121,19 +121,32 @@ class Client():
         print("Reputation Updated\n")    
 
     def select_older_data(self):
-        y = self.dataLoader.dataset.get_labels(list(range(self.bottom_slice,self.top_slice)))
-        counts = Counter(y)
-        num_classes = len(counts)
-        #old_dataset = Subset(self.dataLoader.dataset, old_samples)
-        comp = self.dataLoader.dataset.get_labels(list(range(self.bottom_slice)))
-        indices = []
-        for c,num in counts.items() :
-            idx = np.asarray(comp==c).nonzero()[0]
-            r = self.reputation[idx]
-            req = max(0, -(self.top_slice//-num_classes) - num)
-            if len(idx) :
-                samples = np.random.choice(idx, req, p = np.exp(r/self.gamma)/np.sum(np.exp(r/self.gamma)))
-                indices.extend(samples)
+        if self.bottom_slice != self.top_slice :
+            y = self.dataLoader.dataset.get_labels(list(range(self.bottom_slice,self.top_slice)))
+            counts = Counter(y)
+            num_classes = len(counts)
+            #old_dataset = Subset(self.dataLoader.dataset, old_samples)
+            comp = self.dataLoader.dataset.get_labels(list(range(self.bottom_slice)))
+            indices = []
+            for c,num in counts.items() :
+                idx = np.asarray(comp==c).nonzero()[0]
+                r = self.reputation[idx]
+                req = max(0, -(self.top_slice//-num_classes) - num)
+                if len(idx) :
+                    samples = np.random.choice(idx, req, p = np.exp(r/self.gamma)/np.sum(np.exp(r/self.gamma)))
+                    indices.extend(samples)
+        else :
+            comp = self.dataLoader.dataset.get_labels(list(range(self.bottom_slice)))
+            indices = []
+            counts = Counter(comp)
+            num_classes = len(counts)
+            for c,num in counts.items() :
+                idx = np.asarray(comp==c).nonzero()[0]
+                r = self.reputation[idx]
+                req = max(0, -(self.bottom_slice//-num_classes))
+                if len(idx) :
+                    samples = np.random.choice(idx, req, p = np.exp(r/self.gamma)/np.sum(np.exp(r/self.gamma)))
+                    indices.extend(samples)           
         print("From the previous collection", len(indices), "samples are selected for training")    
         return indices
         
@@ -142,8 +155,8 @@ class Client():
         if total_quantity > self.top_slice :
             print("Do not have",total_quantity,"samples! Training on whatever is present.")
             old_indices = []
-            self.dataset = Subset(self.dataLoader.dataset, list(range(self.bottom_slice,self.top_slice)))
-            training_indices = np.array(old_indices+list(range(self.bottom_slice,self.top_slice)))
+            self.dataset = Subset(self.dataLoader.dataset, list(range(self.top_slice)))
+            training_indices = np.array(old_indices+list(range(self.top_slice)))
             #while total_quantity > self.top_slice: self.collect_data()
         elif total_quantity > self.top_slice - self.bottom_slice:
             old_indices = self.select_older_data()
