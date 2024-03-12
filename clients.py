@@ -155,18 +155,18 @@ class Client():
         if total_quantity > self.top_slice :
             """If the size of training that needs to happen is more than all the data that you have then train on whatever you have"""
             print("Do not have",total_quantity,"samples! Training on whatever is present.")
-            self.dataset = Subset(self.dataLoader.dataset, list(range(self.top_slice)))
+            #self.dataset = Subset(self.dataLoader.dataset, list(range(self.top_slice)))
             training_indices = np.array(list(range(self.top_slice)))
         elif total_quantity > self.top_slice - self.bottom_slice:
             """If the required quantity is more than the amount of data collected, then need to chose the older samples.
             Also runs when no data is collected so all data is from older samples"""
             old_indices = self.select_older_data()
             training_indices = np.array(old_indices+list(range(self.bottom_slice,self.top_slice)))
-            self.dataset = Subset(self.dataLoader.dataset, list(range(self.bottom_slice,self.top_slice))+old_indices)
+            #self.dataset = Subset(self.dataLoader.dataset, list(range(self.bottom_slice,self.top_slice))+old_indices)
         else : 
             """If you collected more samples than were needed, then we do not need any more samples so only the current samples"""
             training_indices = np.array(list(range(self.bottom_slice,self.bottom_slice+total_quantity)))
-            self.dataset = Subset(self.dataLoader.dataset, list(range(self.bottom_slice,self.bottom_slice+total_quantity)))
+            #self.dataset = Subset(self.dataLoader.dataset, list(range(self.bottom_slice,self.bottom_slice+total_quantity)))
         print("In total, Client", self.cid, "will train on", len(self.dataset), "samples")
         print("Updating Reputation using the",self.reputation_method,"method")
         self.update_reputation(training_indices)                                                                              # updating reputation
@@ -186,6 +186,8 @@ class Client():
             #TODO [AA] : Where are the training indices used? The dataloader does not consider them!!
             training_indices = self.select_data(self.training_size)                                                   # training indices obtained from the budget
             #TODO [AA]: Isn't this using the whole dataset for training? Only a subset should be used
+            # I was updating self.dataset in the select_data function. I moved it here now
+            self.dataset = Subset(self.dataLoader.dataset, list(training_indices))
             loader = DataLoader(self.dataset, shuffle=True, batch_size=self.batch_size, drop_last=False)                # dataloader for the training
             self.model.to(self.device)
             self.model.train()
