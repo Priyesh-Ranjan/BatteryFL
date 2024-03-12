@@ -199,11 +199,9 @@ class Client():
                     self.reputation[i] = self.mu*self.reputation[i] + (1 - self.beta)*self.reputation[i]
             if flag : break
         
-        
     def collect_data(self):
         while not(self.check_diversity()) and (self.collection_budget>=self.size*self.collection):
                 print("Collecting data...(Check diversity function is too slow so it takes a lot of time)")
-                start = self.top_slice
                 for num in range(self.size):
                     if self.check_diversity():
                         break
@@ -213,9 +211,9 @@ class Client():
                             self.top_slice = len(self.dataLoader.dataset)
                             print("All the data that could have been collected is collected!")
                             break
-                self.collection_budget -= self.collection*(self.top_slice - start)
-                print("Samples collected per class:",Counter(self.dataLoader.dataset.get_labels(range(start,self.top_slice))))
-                print("Client collected",str(self.top_slice-start),"samples. Total samples = ",self.top_slice,"\n")
+                self.collection_budget -= self.collection*(self.top_slice - self.bottom_slice)
+                print("Samples collected per class:",Counter(self.dataLoader.dataset.get_labels(range(self.bottom_slice,self.top_slice))))
+                print("Client collected",str(self.top_slice-self.bottom_slice),"samples. Total samples = ",self.top_slice,"\n")
         if (self.collection_budget < self.size*self.collection) : print("Ran out of collection battery quota")       
         
     def report_battery(self) :
