@@ -69,7 +69,7 @@ class Client():
         
     def participation(self):
         if len(self.losses) : loss_val = self.losses[-1]
-        else : loss_val = -1
+        else : loss_val = 100000
         return loss_val, self.battery, self.battery - (self.collection_budget + self.training_budget)
         
     def perform_task(self):

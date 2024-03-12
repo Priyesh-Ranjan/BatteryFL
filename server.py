@@ -108,7 +108,7 @@ class Server():
         loss_val = np.array(loss)
         idx = np.array(idx)
         if self.iter == 0 or not idx:
-            return 10000 if self.iter == 0 else 0
+            return 1 if self.iter == 0 else 0
     
         #non_negative_losses_idx = loss_val[idx >= 0]
         non_negative_losses = loss_val[loss_val >= 0]
@@ -118,7 +118,7 @@ class Server():
     
         return np.sum(non_negative_losses[idx]) / np.sum(non_negative_losses)
 
-    def do(self):
+    def Select_Clients(self):
         num_clients = len(self.clients)
         loss_val = []; battery1 = []; battery2 = []
         for c in self.clients :
@@ -156,6 +156,10 @@ class Server():
 
         selected_clients = [self.clients[c] for c in S]   
         print("Clients selected this round are:",S)
+        return selected_clients
+
+    def do(self):
+        selected_clients = self.Select_Clients()
         #selected_clients = [c for c in self.clients if c in S]
         for c in selected_clients:
             c.setModelParameter(self.model.state_dict())
