@@ -49,7 +49,9 @@ class Client():
         self.size = collection_size
         self.threshold = entropy_threshold
         self.collection_budget = collection_budget
+        self.initial_collection_budget = collection_budget
         self.training_budget = training_budget
+        self.initial_training_budget = training_budget
         self.training_size = training_size
         self.num_classes = 10
 
@@ -73,6 +75,8 @@ class Client():
     def perform_task(self):
         if self.battery > 0:
             print('-----------------------------Client {}-----------------------------'.format(self.cid))
+            self.training_budget = self.initial_training_budget
+            self.collection_budget = self.initial_collection_budget
             self.battery -= (self.training_budget+self.collection_budget)
             self.collect_data()
             self.train()
@@ -125,7 +129,6 @@ class Client():
             y = self.dataLoader.dataset.get_labels(list(range(self.bottom_slice,self.top_slice)))
             counts = Counter(y)
             num_classes = len(counts)
-            #old_dataset = Subset(self.dataLoader.dataset, old_samples)
             comp = self.dataLoader.dataset.get_labels(list(range(self.bottom_slice)))
             indices = []
             for c,num in counts.items() :
@@ -151,7 +154,6 @@ class Client():
         return indices
         
     def select_data(self, total_quantity):   
-        #new_dataset = Subset(self.dataLoader.dataset, new_indices)
         if total_quantity > self.top_slice :
             print("Do not have",total_quantity,"samples! Training on whatever is present.")
             old_indices = []
