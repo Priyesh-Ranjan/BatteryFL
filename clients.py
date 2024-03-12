@@ -76,15 +76,6 @@ class Client():
         if self.battery > 0:
             print('-----------------------------Client {}-----------------------------'.format(self.cid))
             self.battery -= (self.training_budget+self.collection_budget)
-            #if self.check_diversity() :
-            #    if self.check_convergence() :   
-            #        self.collect_data()
-            #        self.train()
-            #    else :
-            #        self.train()
-            #else :
-            #        self.collect_data()
-            #        self.train()
             self.collect_data()
             self.train()
             if self.isTrained == True : self.update()   
@@ -140,8 +131,6 @@ class Client():
         indices = []
         for c,num in counts.items() :
             idx = np.asarray(comp==c).nonzero()[0]
-            #print(idx)
-            #idx = old_dataset.targets == c
             r = self.reputation[idx]
             req = max(0, -(self.top_slice//-num_classes) - num)
             if len(idx) :
@@ -228,6 +217,7 @@ class Client():
                 self.collection_budget -= self.collection*(self.top_slice - self.bottom_slice)
                 print("Samples collected per class:",Counter(self.dataLoader.dataset.get_labels(range(start,self.top_slice))))
                 print("Client collected",str(self.top_slice-start),"samples. Total samples = ",self.top_slice)
+        if (self.collection_budget < self.size*self.collection) : print("Ran out of collection battery quota")
         self.bottom_slice = start        
         self.indices.append((self.bottom_slice, self.top_slice))    
         
