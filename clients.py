@@ -30,7 +30,6 @@ class Client():
         self.isTrained = False
         self.inner_epochs = 1
         self.criterion = criterion
-        self.indices = [(0,0)]
         self.top_slice = 0
         self.bottom_slice = 0
         self.dataset = []
@@ -38,7 +37,6 @@ class Client():
         self.reputation = np.zeros(len(dataLoader.dataset))
         self.reputation_method = reputation_method
         self.diversity_method = "Entropy"
-        #self.convergence_method = "train"
         self.alpha = alpha
         self.beta = beta
         self.gamma = gamma
@@ -100,7 +98,7 @@ class Client():
         if self.top_slice == 0:
             return 0
         else:
-            labels = self.dataLoader.dataset.get_labels(range(self.bottom_slice, self.top_slice))
+            labels = self.dataLoader.dataset.get_labels(range(self.top_slice))
             if len(set(labels)) != self.num_classes:
                 return 0
             elif self.diversity_method == "Entropy":
@@ -204,7 +202,7 @@ class Client():
         
     def collect_data(self):
         while not(self.check_diversity()) and (self.collection_budget>=self.size*self.collection):
-                print("Collecting data...(Check diversity function is too slow so it takes a lot of time)\n")
+                print("Collecting data...(Check diversity function is too slow so it takes a lot of time)")
                 start = self.top_slice
                 for num in range(self.size):
                     if self.check_diversity():
@@ -215,12 +213,10 @@ class Client():
                             self.top_slice = len(self.dataLoader.dataset)
                             print("All the data that could have been collected is collected!")
                             break
-                self.collection_budget -= self.collection*(self.top_slice - self.bottom_slice)
+                self.collection_budget -= self.collection*(self.top_slice - start)
                 print("Samples collected per class:",Counter(self.dataLoader.dataset.get_labels(range(start,self.top_slice))))
-                print("Client collected",str(self.top_slice-start),"samples. Total samples = ",self.top_slice)
-        if (self.collection_budget < self.size*self.collection) : print("Ran out of collection battery quota")
-        self.bottom_slice = start        
-        self.indices.append((self.bottom_slice, self.top_slice))    
+                print("Client collected",str(self.top_slice-start),"samples. Total samples = ",self.top_slice,"\n")
+        if (self.collection_budget < self.size*self.collection) : print("Ran out of collection battery quota")       
         
     def report_battery(self) :
         return self.battery
@@ -307,6 +303,7 @@ class Client():
         self.isTrained = False
         print("Client",self.cid,"sending model to the server \n")
         print("\n")
+        self.bottom_slice = self.top_slice
         self.battery -= self.upload
 
     #         self.test(self.dataLoader)
