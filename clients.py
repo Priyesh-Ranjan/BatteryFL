@@ -48,6 +48,7 @@ class Client():
         self.round_budget = round_budget                                       # Round budget in the beginning, remains same over the entire round
         self.training_size = training_size                                     # Size of training that will happen in a round, pre-defined based on dataset
         self.num_classes = 10
+        self.label_distribution = [0 for _ in range(self.num_classes)]
 
     def init_stateChange(self):
         states = deepcopy(self.model.state_dict())
@@ -98,11 +99,10 @@ class Client():
         if bottom_index - top_index == 0:
             return False                                                                            # If no data
         else:
-            labels = self.dataLoader.dataset.get_labels(range(bottom_index, top_index))         # get labels from the data method
-            if len(set(labels)) != self.num_classes:                                            # if you don't have all the classes yet then diversity = 0
+            if 0 in self.label_distribution != self.num_classes:                                            # if you don't have all the classes yet then diversity = 0
                 return False
             elif self.diversity_method == "Entropy":
-                entropy_value = Entropy(labels, threshold=self.training_size/self.num_classes)  # checking entropy
+                entropy_value = Entropy(self.label_distribution, threshold=self.training_size/self.num_classes)  # checking entropy
                 return entropy_value >= self.threshold                                             # If it is higher than threshold then diversity passed
     
     def update_reputation(self, indices) :                                                                   # Updating reputation of the passed samples
@@ -245,6 +245,8 @@ class Client():
                 self.top_slice += 1                                                                           # add one sample by increasing the top slice
                 if self.top_slice >= len(self.dataLoader.dataset):
                     self.top_slice = len(self.dataLoader.dataset)                                             # reached the end of the entire data available
+                    #increase the count of the label
+                    self.label_distribution[self.dataLoader.dataset.get_labels(self.top_slice-1)] += 1
                     print("All the data that could have been collected is collected!")
                     break
         print("Samples collected per class:",Counter(self.dataLoader.dataset.get_labels(range(self.bottom_slice,self.top_slice))))
