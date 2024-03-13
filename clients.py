@@ -81,7 +81,7 @@ class Client():
         print("Clients training budget is", self.training_budget)
         print("Clients collection budget is", self.collection_budget)
         if self.collection_budget + self.training_budget + self.upload > self.round_budget:
-            breakpoint()
+            assert False, "Client {} has exceeded the round budget".format(self.cid)
     
     def check_convergence(self):                                                                # Returns 1 if model has converged, 0 otherwise
         #TODO: [AA] the class frequency should not be computed from scratch every time, it can be easily cached ad updated
