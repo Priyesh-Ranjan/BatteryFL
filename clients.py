@@ -63,11 +63,20 @@ class Client():
         self.battery -= self.download                                          # Download battery decreased upon downloading data
         
     def participation(self):                                                                              # Client provide info to the server
-        if len(self.losses) : loss_val = self.losses[-1]                                                  # If previous loss exists then that is returned
-        else : loss_val = 1                                                                               # otherwise loss is assumed infinite
-        return loss_val, self.battery, self.battery - self.round_budget                                   # return L_t; b_t and b_(t+1)
+        # If previous loss exists then that is returned otherwise loss is assumed infinite
+        if len(self.losses) : 
+            loss_val = self.losses[-1] 
+        else : 
+            loss_val = 1000000  
+        prev_expenditure =  self.collection_budget + self.training_budget 
+        if prev_expenditure == 0:
+            future_battery = self.battery - self.round_budget
+        else:
+            future_battery = self.battery - prev_expenditure - self.upload -self.download
+        return loss_val, self.battery, future_battery                                   # return L_t; b_t and b_(t+1)
         
     def perform_task(self):                                                                               # Deciding what to do
+        initial_battery = self.battery
         if self.battery >= self.upload:                                                                    # If you can't even upload then no point of training
             print('-----------------------------Client {}-----------------------------'.format(self.cid))
             #resetting the budget
@@ -81,6 +90,7 @@ class Client():
             print("Client",self.cid,"is out of battery!")
         print("Clients training budget is", self.training_budget)
         print("Clients collection budget is", self.collection_budget)
+        print("Client total energy spent is", initial_battery - self.battery)
         if self.collection_budget + self.training_budget + self.upload > self.round_budget:
             assert False, "Client {} has exceeded the round budget".format(self.cid)
     
@@ -169,7 +179,6 @@ class Client():
             #self.dataset = Subset(self.dataLoader.dataset, list(range(self.bottom_slice,self.bottom_slice+total_quantity)))
         print("In total, Client", self.cid, "will train on", len(self.dataset), "samples")
         print("Updating Reputation using the",self.reputation_method,"method")
-        self.update_reputation(training_indices)                                                                              # updating reputation
         return training_indices
 
     def train(self):
@@ -185,9 +194,8 @@ class Client():
             print("Round",e+1,"\n")
             #TODO [AA] : Where are the training indices used? The dataloader does not consider them!!
             training_indices = self.select_data(self.training_size)                                                   # training indices obtained from the budget
-            #TODO [AA]: Isn't this using the whole dataset for training? Only a subset should be used
-            # I was updating self.dataset in the select_data function. I moved it here now
             self.dataset = Subset(self.dataLoader.dataset, list(training_indices))
+            self.update_reputation(training_indices)                                                                              # updating reputation
             loader = DataLoader(self.dataset, shuffle=True, batch_size=self.batch_size, drop_last=False)                # dataloader for the training
             self.model.to(self.device)
             self.model.train()
@@ -266,22 +274,25 @@ class Client():
         c = 0
         f1 = 0
         conf = np.zeros([10,10])
-        with torch.no_grad():
-            for data, target in testDataLoader:
-                data, target = data.to(self.device), target.to(self.device)
-                output = self.model(data)
-                test_loss += self.criterion(output, target, reduction='sum').item()  # sum up batch loss
-                pred = output.argmax(dim=1, keepdim=True)  # get the index of the max log-probability
-                correct += pred.eq(target.view_as(pred)).sum().item()
-                count += pred.shape[0]
-                conf += confusion_matrix(target.cpu(),pred.cpu(), labels = [i for i in range(10)])
-                f1 += f1_score(target.cpu(), pred.cpu(), average = 'weighted')*count
-                c+=count
-
+        data, target = [], []
+        for batch_data, batch_target in testDataLoader:
+            data.append(batch_data)
+            target.append(batch_target)
+        data = torch.cat(data, dim=0)
+        target = torch.cat(target, dim=0)
+        data, target = data.to(self.device), target.to(self.device)
+        output = self.model(data)
+        test_loss = self.criterion(output, target, reduction='sum').item()  # sum up batch loss
+        pred = output.argmax(dim=1, keepdim=True)  # get the index of the max log-probability
+        correct = pred.eq(target.view_as(pred)).sum().item()
+        count = pred.shape[0]
+        conf += confusion_matrix(target.cpu(),pred.cpu(), labels = [i for i in range(10)])
+        f1 = f1_score(target.cpu(), pred.cpu(), average = 'weighted')*count
+        c = count
 
         test_loss /= len(testDataLoader.dataset)
         accuracy = 100. * correct / count
-        self.model.cpu()  ## avoid occupying gpu when idle
+        #self.model.cpu()  ## avoid occupying gpu when idle
         # Uncomment to print the test scores of each client
         print('-----------------------------Client {}-----------------------------'.format(self.cid))
         print('Test set: Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%), F1 Score: {:.3f}'.format(test_loss, correct, count,

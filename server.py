@@ -52,19 +52,23 @@ class Server():
         f1 = 0
         conf = np.zeros([10,10])
         with torch.no_grad():
-            for data, target in self.dataLoader:
-                data, target = data.to(self.device), target.to(self.device)
-                output = self.model(data)
-                test_loss += self.criterion(output, target, reduction='sum').item()  # sum up batch loss
-                if output.dim() == 1:
-                    pred = torch.round(torch.sigmoid(output))
-                else:
-                    pred = output.argmax(dim=1, keepdim=True)  # get the index of the max log-probability
-                correct += pred.eq(target.view_as(pred)).sum().item()
-                count += pred.shape[0]
-                conf += confusion_matrix(target.cpu(),pred.cpu(), labels = [i for i in range(10)])
-                f1 += f1_score(target.cpu(), pred.cpu(), average = 'weighted')*count
-                c+=count
+            data, target = [], []
+            for batch_data, batch_target in self.dataLoader:
+                data.append(batch_data)
+                target.append(batch_target)
+            data = torch.cat(data, dim=0).to(self.device)
+            target = torch.cat(target, dim=0).to(self.device)
+            output = self.model(data)
+            test_loss += self.criterion(output, target, reduction='sum').item()  # sum up batch loss
+            if output.dim() == 1:
+                pred = torch.round(torch.sigmoid(output))
+            else:
+                pred = output.argmax(dim=1, keepdim=True)  # get the index of the max log-probability
+            correct += pred.eq(target.view_as(pred)).sum().item()
+            count += pred.shape[0]
+            conf += confusion_matrix(target.cpu(),pred.cpu(), labels = [i for i in range(10)])
+            f1 += f1_score(target.cpu(), pred.cpu(), average = 'weighted')*count
+            c+=count
         test_loss /= count
         accuracy = 100. * correct / count
         self.model.cpu()  ## avoid occupying gpu when idle
@@ -153,7 +157,9 @@ class Server():
 
     def do(self):                                                              # One round of communication, client training is asynchronous
         #selected_clients = self.Select_Clients()                              # Trying to debug this still
-        selected_clients = self.clients
+        selected_clients = [c for c in self.clients if c.battery > 0]           # Selecting clients with battery
+        if selected_clients == []:
+            return False
         for c in selected_clients:
             c.setModelParameter(self.model.state_dict())                       # distribute server model to clients
             c.perform_task()                                                   # selected clients will perform the FSM
@@ -171,6 +177,7 @@ class Server():
         for param in self.model.state_dict():
             self.model.state_dict()[param] += Delta[param]
         self.iter += 1
+        return True
 
     def saveChanges(self, clients):                                            # To save the model as PCA
 

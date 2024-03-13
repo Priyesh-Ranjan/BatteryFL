@@ -104,7 +104,9 @@ def main(args):
 
         print('\n\n########EPOCH %d ########' % j)
         print('###Model distribution###\n')
-        server.do()
+        if not server.do():
+            print('No clients have any battery left')
+            break
         writing_function(writer, "test", loss, accuracy, F1, conf, steps)
 
         #         server.train_concurrent(group)
