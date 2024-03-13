@@ -124,40 +124,39 @@ class Server():
         for c in self.clients :
             loss, battery_current, battery_future = c.participation()
             battery2.append(battery_future); battery1.append(battery_current); loss_val.append(loss)
+        loss_val = [v if v < 1e10 else np.mean(loss_val) for v in loss_val]
         S = []
-        while True:
+        while len(S) < len(self.clients):
+            current_score = min(self.f2(loss_val, S), self.f1(battery1, battery2, S))
             F1 = [self.f1(battery1, battery2, list(set(S + [c]))) for c in range(num_clients)]
             F2 = [self.f2(loss_val, list(set(S + [c]))) for c in range(num_clients)]
             F = np.minimum(F1, F2)
-            l = [i for i in range(num_clients) if i not in S]
-            if max(F[l]) <= min(self.f2(loss_val, S), self.f1(battery1, battery2, S)):
+            l = [i for i in range(num_clients) if i not in S and self.clients[i].battery > 0]
+            if l==[] or max(F[l]) <= current_score:
                 break
             N = []
             for c in range(num_clients):
-                if c in S: break
+                if c in S: 
+                    continue
                 ND = True
                 for c_prime in range(num_clients):
-                    if c_prime in S + [c]: break
+                    if c_prime in S + [c]: 
+                        continue
                     if (F1[c_prime] >= F1[c]) and (F2[c_prime] >= F2[c]) and (F1[c_prime] > F1[c] or F2[c_prime] > F2[c]):
                         ND = False
                         break
                 if ND:
                     N.append(c)
-            if len(N) == 1:
-                S.extend(N)
-            else:
-                max_index = np.argmax(F[N])
-                S.append(N[max_index])
-            if len(S) == len(self.clients):
-                break
+            max_index = np.argmax(F[N])
+            S.append(N[max_index])
 
         selected_clients = [self.clients[c] for c in S]   
         print("Clients selected this round are:",S)
         return selected_clients
 
     def do(self):                                                              # One round of communication, client training is asynchronous
-        #selected_clients = self.Select_Clients()                              # Trying to debug this still
-        selected_clients = [c for c in self.clients if c.battery > 0]           # Selecting clients with battery
+        selected_clients = self.Select_Clients()                              # Trying to debug this still
+        #selected_clients = [c for c in self.clients if c.battery > 0]           # Selecting clients with battery
         if selected_clients == []:
             return False
         for c in selected_clients:

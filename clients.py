@@ -49,6 +49,8 @@ class Client():
         self.training_size = training_size                                     # Size of training that will happen in a round, pre-defined based on dataset
         self.num_classes = 10
         self.label_distribution = [0 for _ in range(self.num_classes)]
+        self.collection_budget = 0
+        self.training_budget = 0
 
     def init_stateChange(self):
         states = deepcopy(self.model.state_dict())
@@ -67,7 +69,7 @@ class Client():
         if len(self.losses) : 
             loss_val = self.losses[-1] 
         else : 
-            loss_val = 1000000  
+            loss_val = 1e10
         prev_expenditure =  self.collection_budget + self.training_budget 
         if prev_expenditure == 0:
             future_battery = self.battery - self.round_budget
