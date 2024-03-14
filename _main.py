@@ -61,7 +61,7 @@ def main(args):
 
     # create server instance
     model0 = Net()
-    server = Server(model0, testData, args.upload_battery, args.download_battery, args.collection_battery, args.training_battery, args.collection_size, criterion, device)
+    server = Server(model0, testData, criterion, device, args.client_selection)
     server.set_AR(args.AR)
     server.path_to_aggNet = args.path_to_aggNet
     if args.save_model_weights:
@@ -92,22 +92,22 @@ def main(args):
         print("Client",i,"initialized with", client_i.report_battery(), "battery")
 
     loss, accuracy, F1, conf = server.test()
-    steps = 0
+    step = 0
     #writing_function(writer, "test", loss, accuracy, F1, conf, steps)
     
     #for i,client in enumerate(clients_list) :
     #        loss, accuracy, F1, conf = client.test
     #        writing_function(writer, "client"+str(i)+'test', loss, accuracy, F1, conf, steps)
 
-    for j in range(args.epochs):
-        steps = j + 1
+    while True:
+        step += 1
 
-        print('\n\n########EPOCH %d ########' % j)
+        print('\n\n########EPOCH %d ########' % step)
         print('###Model distribution###\n')
-        if not server.do():
+        if not(server.do()):
             print('No clients have any battery left')
             break
-        writing_function(writer, "test", loss, accuracy, F1, conf, steps)
+        writing_function(writer, "test", loss, accuracy, F1, conf, step)
 
         #         server.train_concurrent(group)
         for i, client in enumerate(clients_list) :
@@ -116,7 +116,7 @@ def main(args):
 
 
             loss, accuracy, F1, conf = client.test(testData)
-            writing_function(writer, "client"+str(i)+'test', loss, accuracy, F1, conf, steps)
+            writing_function(writer, "client"+str(i)+'test', loss, accuracy, F1, conf, step)
             
             print("Client", i, "now has", client.report_battery() ,"battery left \n")
 

@@ -8,7 +8,7 @@ def Loss(model, dataset, device, optimizer, criterion):
     model.eval()
     loss_all = []
     criterion = F.CrossEntropyLoss(reduction='none')
-    #TODO: [AA] do we need to put the batch_size to 1? 
+    #TODO: [AA] do we need to put the batch_size to 1?
     # reduction='none' should already return the loss for each sample in the batch
     # and is more efficient
     loader = DataLoader(dataset, shuffle=False, batch_size=dataset.__len__())
@@ -30,7 +30,7 @@ def Loss(model, dataset, device, optimizer, criterion):
     I_vals = [loss / total_loss for loss in loss_all]
 
     # Optionally, move model back to CPU if not using it on GPU afterwards
-    #model.cpu()
+    # model.cpu()
     return I_vals, np.mean(np.array(loss_all))
 
 

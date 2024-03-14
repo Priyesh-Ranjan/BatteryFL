@@ -195,6 +195,7 @@ class Client():
         for e in range(inner_epochs):                                                                                 # training for the given rounds
             print("Round",e+1,"\n")
             #TODO [AA] : Where are the training indices used? The dataloader does not consider them!!
+            # The subset function selects those samples from the dataset and creates a new one that can be used by the dataloader
             training_indices = self.select_data(self.training_size)                                                   # training indices obtained from the budget
             self.dataset = Subset(self.dataLoader.dataset, list(training_indices))
             self.update_reputation(training_indices)                                                                              # updating reputation
@@ -226,6 +227,7 @@ class Client():
             self.isTrained = True
             self.model.cpu()  ## avoid occupying gpu when idle
             #TODO [AA] : this sometimes reports less samples
+            # I fixed it
             print("Client trained on",ind,"samples.")
             print(" Used around",self.training_budget,"battery")
             print("Average loss on the data = ", self.losses[-1],"                           (It is infinite if the data trained on is less than batch_size)\n")
@@ -238,7 +240,6 @@ class Client():
                 break
         
     def collect_data(self):                                                                         # collects data
-        # PR: I have to discuss a few things about this function in tomorrow's meeting so I am leaving it like this
         loc = self.bottom_slice                                                            # if called from train function check diversity of data collected this round
         print("Collecting data...(Check diversity function is too slow so it takes a lot of time)")
         start = self.top_slice
@@ -246,7 +247,8 @@ class Client():
             # if diversity is matched or budget will be insufficient to train
             if self.top_slice - loc >= self.training_size:
                 break
-            if ( not self.check_convergence() and self.check_diversity(0, self.top_slice)) and self.top_slice > self.training_size:
+            if ( not self.check_convergence() and self.check_diversity(0, self.top_slice)) and self.top_slice > self.training_size: 
+                # PR: Shouldn't this be training size - loc instead of just training_size?
                     #print all the conditions
                     print(f"Collection stopped: Top slice = {self.top_slice},  collection budget = {self.collection_budget}, convergence = {self.check_convergence()}, diversity = {self.check_diversity(0, self.top_slice)}")
                     break
@@ -306,7 +308,6 @@ class Client():
         print(conf.astype(int))
         print("\n")
         return test_loss, accuracy, f1/c, conf.astype(int)
-
 
     """def train_checking(self):
         self.model.to(self.device)
