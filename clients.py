@@ -237,19 +237,20 @@ class Client():
                 print("Early stopping training")
                 break
         
-    def collect_data(self, location = 'main'):                                                                        # collects data
-        if location == 'main' : loc = 0                                                                               # if called from perform_task function check diversity of total data
-        elif location == 'train' : loc = self.bottom_slice                                                            # if called from train function check diversity of data collected this round
+    def collect_data(self):                                                                         # collects data
+        loc = self.bottom_slice                                                            # if called from train function check diversity of data collected this round
         print("Collecting data...(Check diversity function is too slow so it takes a lot of time)")
         start = self.top_slice
         while True:     
             # if diversity is matched or budget will be insufficient to train
             if self.top_slice - loc >= self.training_size:
                 break
-            if (( not self.check_convergence() and self.check_diversity(0, self.top_slice))\
-                or (self.round_budget<max(self.training_size,(self.top_slice-loc+1))*self.training+self.collection_budget+ self.upload)):
-                if self.top_slice > self.training_size:
+            if ( not self.check_convergence() and self.check_diversity(0, self.top_slice)) and self.top_slice > self.training_size:
+                    #print all the conditions
+                    print(f"Collection stopped: Top slice = {self.top_slice},  collection budget = {self.collection_budget}, convergence = {self.check_convergence()}, diversity = {self.check_diversity(0, self.top_slice)}")
                     break
+            if int((self.round_budget-self.collection_budget-self.collection - self.upload)/(self.training_size*self.training)) == 0:
+                break
             self.collection_budget += self.collection                                                         # subtracting the battery spent from the budget +
             if np.random.random() <= self.prob:                                                               # if random number between (0,1) generates > collection probability
                 self.top_slice += 1                                                                           # add one sample by increasing the top slice
