@@ -42,6 +42,7 @@ class Server():
         self.clients.append(c)
 
     def test(self):
+        print("-----------------------------Server-----------------------------")
         print("[Server] Start testing \n")
         self.model.to(self.device)
         self.model.eval()
@@ -170,7 +171,6 @@ class Server():
         Delta = self.AR(selected_clients)                                      # Getting model weights from the clients
         toc = time.perf_counter()
         print("\n")
-        print("-----------------------------Server-----------------------------")
         print(f"[Server] The aggregation takes {toc - tic:0.6f} seconds.\n")
         
         for param in self.model.state_dict():
