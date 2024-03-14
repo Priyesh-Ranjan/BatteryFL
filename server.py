@@ -170,6 +170,7 @@ class Server():
         tic = time.perf_counter()
         Delta = self.AR(selected_clients)                                      # Getting model weights from the clients
         toc = time.perf_counter()
+        print("----------------------------------------------------------------")
         print("\n")
         print(f"[Server] The aggregation takes {toc - tic:0.6f} seconds.\n")
         
