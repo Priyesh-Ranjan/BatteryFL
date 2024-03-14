@@ -238,6 +238,7 @@ class Client():
                 break
         
     def collect_data(self, location = 'main'):                                                                        # collects data
+        # PR: I have to discuss a few things about this function in tomorrow's meeting so I am leaving it like this
         if location == 'main' : loc = 0                                                                               # if called from perform_task function check diversity of total data
         elif location == 'train' : loc = self.bottom_slice                                                            # if called from train function check diversity of data collected this round
         print("Collecting data...(Check diversity function is too slow so it takes a lot of time)")
