@@ -179,7 +179,7 @@ class Client():
             """If you collected more samples than were needed, then we do not need any more samples so only the current samples"""
             training_indices = np.array(list(range(self.bottom_slice,self.bottom_slice+total_quantity)))
             #self.dataset = Subset(self.dataLoader.dataset, list(range(self.bottom_slice,self.bottom_slice+total_quantity)))
-        print("In total, Client", self.cid, "will train on", len(self.dataset), "samples")
+        print("In total, Client", self.cid, "will train on", len(training_indices), "samples")
         print("Updating Reputation using the",self.reputation_method,"method")
         return training_indices
 
