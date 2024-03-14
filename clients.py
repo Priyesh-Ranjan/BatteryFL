@@ -259,7 +259,7 @@ class Client():
                     self.label_distribution[self.dataLoader.dataset.get_labels(self.top_slice-1)] += 1
                     print("All the data that could have been collected is collected!")
                     break
-        print("Samples collected per class:",Counter(self.dataLoader.dataset.get_labels(range(self.bottom_slice,self.top_slice))))
+        #print("Samples collected per class:",Counter(self.dataLoader.dataset.get_labels(range(self.bottom_slice,self.top_slice))))
         print("Dataset distribution:",Counter(self.dataLoader.dataset.get_labels(range(0,self.top_slice))))
         print("Client collected",str(self.top_slice-start),"samples. Total samples this round = ",self.top_slice-self.bottom_slice,".Overall samples =",self.top_slice,"\n")
         #if (self.collection_budget < self.size*self.collection) : print("Ran out of collection battery quota")        # if ran out of collection budget     
