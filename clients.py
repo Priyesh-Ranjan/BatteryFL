@@ -219,14 +219,14 @@ class Client():
                 loss.backward()
                 self.optimizer.step()
                 loss_sum = loss.sum().cpu().detach().numpy()                                                           # ......to here is just training
-                ind = batch_index
+                ind += len(data)
                 self.training_budget += (self.batch_size)*self.training                                           # budget is decreased by the amount training is done
                 self.losses.append(loss_sum/(self.batch_size))                                                    # average of loss being appended
 
             self.isTrained = True
             self.model.cpu()  ## avoid occupying gpu when idle
             #TODO [AA] : this sometimes reports less samples
-            print("Client trained on",(ind)*self.batch_size,"samples.")
+            print("Client trained on",ind,"samples.")
             print(" Used around",self.training_budget,"battery")
             print("Average loss on the data = ", self.losses[-1],"                           (It is infinite if the data trained on is less than batch_size)\n")
             total_indices = np.array(range(self.top_slice))                                                           # all the samples that we have right now
