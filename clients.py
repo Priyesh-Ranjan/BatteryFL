@@ -179,7 +179,7 @@ class Client():
             """If you collected more samples than were needed, then we do not need any more samples so only the current samples"""
             training_indices = np.array(list(range(self.bottom_slice,self.bottom_slice+total_quantity)))
             #self.dataset = Subset(self.dataLoader.dataset, list(range(self.bottom_slice,self.bottom_slice+total_quantity)))
-        print("In total, Client", self.cid, "will train on", len(self.dataset), "samples")
+        print("In total, Client", self.cid, "will train on", len(training_indices), "samples")
         print("Updating Reputation using the",self.reputation_method,"method")
         return training_indices
 
@@ -219,14 +219,14 @@ class Client():
                 loss.backward()
                 self.optimizer.step()
                 loss_sum = loss.sum().cpu().detach().numpy()                                                           # ......to here is just training
-                ind = batch_index
+                ind += len(data)
                 self.training_budget += (self.batch_size)*self.training                                           # budget is decreased by the amount training is done
                 self.losses.append(loss_sum/(self.batch_size))                                                    # average of loss being appended
 
             self.isTrained = True
             self.model.cpu()  ## avoid occupying gpu when idle
             #TODO [AA] : this sometimes reports less samples
-            print("Client trained on",(ind)*self.batch_size,"samples.")
+            print("Client trained on",ind,"samples.")
             print(" Used around",self.training_budget,"battery")
             print("Average loss on the data = ", self.losses[-1],"                           (It is infinite if the data trained on is less than batch_size)\n")
             total_indices = np.array(range(self.top_slice))                                                           # all the samples that we have right now
@@ -238,6 +238,7 @@ class Client():
                 break
         
     def collect_data(self):                                                                         # collects data
+        # PR: I have to discuss a few things about this function in tomorrow's meeting so I am leaving it like this
         loc = self.bottom_slice                                                            # if called from train function check diversity of data collected this round
         print("Collecting data...(Check diversity function is too slow so it takes a lot of time)")
         start = self.top_slice
@@ -260,7 +261,7 @@ class Client():
                     self.label_distribution[self.dataLoader.dataset.get_labels(self.top_slice-1)] += 1
                     print("All the data that could have been collected is collected!")
                     break
-        print("Samples collected per class:",Counter(self.dataLoader.dataset.get_labels(range(self.bottom_slice,self.top_slice))))
+        #print("Samples collected per class:",Counter(self.dataLoader.dataset.get_labels(range(self.bottom_slice,self.top_slice))))
         print("Dataset distribution:",Counter(self.dataLoader.dataset.get_labels(range(0,self.top_slice))))
         print("Client collected",str(self.top_slice-start),"samples. Total samples this round = ",self.top_slice-self.bottom_slice,".Overall samples =",self.top_slice,"\n")
         #if (self.collection_budget < self.size*self.collection) : print("Ran out of collection battery quota")        # if ran out of collection budget     
