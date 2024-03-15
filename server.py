@@ -6,7 +6,7 @@ from sklearn.metrics import f1_score
 import torch
 import torch.nn.functional as F
 import numpy as np
-from utils.client_selection import *
+import utils.client_selection as client_selection
 
 from utils import utils
 import time
@@ -78,16 +78,13 @@ class Server():
 
     def do(self):                                                              # One round of communication, client training is asynchronous
         if self.client_selection == 'ours' :
-            selected_clients = Select_Clients(self.clients)
+            selected_clients = client_selection.Our_Algorithm(self.clients)
         elif self.client_selection == 'AGE' :
-            # AGE algorithm
-            selected_clients = self.clients
+            selected_clients = client_selection.genetic(self.clients, algorithm="age2")
         elif self.client_selection == 'NSGA' :    
-            # NSGA algorithm
-            selected_clients = self.clients
+            selected_clients = client_selection.genetic(self.clients, algorithm="nsga2")
         elif self.client_selection == "EAFL" :
-            # The benchmark
-            selected_clients = self.clients
+            selected_clients = client_selection.eafl(self.clients)
         else :
             print("Selection Algorithm not recognized. Choosing all the clients")
             selected_clients = self.clients

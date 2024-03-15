@@ -260,7 +260,7 @@ class Client():
                 if self.top_slice >= len(self.dataLoader.dataset):
                     self.top_slice = len(self.dataLoader.dataset)                                             # reached the end of the entire data available
                     #increase the count of the label
-                    self.label_distribution[self.dataLoader.dataset.get_labels(self.top_slice-1)] += 1
+                    self.label_distribution[self.dataLoader.dataset.get_labels([self.top_slice-1])] += 1
                     print("All the data that could have been collected is collected!")
                     break
         #print("Samples collected per class:",Counter(self.dataLoader.dataset.get_labels(range(self.bottom_slice,self.top_slice))))

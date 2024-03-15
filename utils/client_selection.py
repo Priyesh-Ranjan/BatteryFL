@@ -1,4 +1,12 @@
 import numpy as np
+import pymoo.core.problem
+import pymoo.algorithms.moo.nsga2
+import pymoo.algorithms.moo.age2
+import pymoo.operators.crossover
+import pymoo.operators.mutation.bitflip
+import pymoo.optimize
+import pymoo.operators.sampling.rnd
+
 def f1(battery_current, battery_future, S):                          # Gives the f1 value from the battery levels
         if len(S) == 0 :
             not_S = [i for i in range(len(battery_current))]
@@ -24,27 +32,29 @@ def f1(battery_current, battery_future, S):                          # Gives the
     
         return fitness_value
     
-def f2(loss, S):                                                     # Gives the f2 values from the loss levels
-        loss_val = np.array(loss)
+def f2(loss_val, S):                                                     # Gives the f2 values from the loss levels
         idx = np.array(S)
         if len(S) == 0:
             return 0
-    
-        #non_negative_losses_idx = loss_val[idx >= 0]
-        #non_negative_losses = loss_val[loss_val >= 0]
-    
-        #if not non_negative_losses.any():
-        #    return 0
-    
         return np.sum(loss_val[S]) / np.sum(loss_val)
+
+def dominates(i, j, objectives):                                     # Check if the first solution dominates the second
+        for o in objectives:
+            if not o[i] >= o[j]:
+                return False
+        for o in objectives:
+            if o[i] > o[j]:
+                return True
+        return False
 
 def Our_Algorithm(clients):                                                  # Select client function (Need to fix some errors)
         num_clients = len(clients)
         loss_val = []; battery1 = []; battery2 = []
-        for c in clients :
-            loss, battery_current, battery_future = c.participation()
-            battery2.append(battery_future); battery1.append(battery_current); loss_val.append(loss)
-        loss_val = [v if v < 1e10 else np.mean(loss_val) for v in loss_val]
+        participations = [c.participation() for c in clients]
+        loss_val = np.array([p[0] for p in participations])
+        loss_val = np.array([v if v < 1e10 else np.mean(loss_val) for v in loss_val])
+        battery1 = np.array([p[1] for p in participations])
+        battery2 = np.array([p[2] for p in participations])
         S = []
         while len(S) < len(clients):
             current_score = min(f2(loss_val, S), f1(battery1, battery2, S))
@@ -62,7 +72,7 @@ def Our_Algorithm(clients):                                                  # S
                 for c_prime in range(num_clients):
                     if c_prime in S + [c]: 
                         continue
-                    if (F1[c_prime] >= F1[c]) and (F2[c_prime] >= F2[c]) and (F1[c_prime] > F1[c] or F2[c_prime] > F2[c]):
+                    if dominates(c_prime, c, [F1, F2]):
                         ND = False
                         break
                 if ND:
@@ -73,3 +83,55 @@ def Our_Algorithm(clients):                                                  # S
         selected_clients = [clients[c] for c in S]   
         print("Clients selected this round are:",S)
         return selected_clients
+
+class BatteryLossOptimization(pymoo.core.problem.Problem):
+    def __init__(self, clients):
+        super().__init__(n_var=len(clients),
+                         n_obj=2,
+                         n_constr=0,
+                         xl=np.array([0]*len(clients)),  # lower bounds
+                         xu=np.array([1]*len(clients)))  # upper bounds
+        self.clients = clients
+
+    def _evaluate(self, x, out, *args, **kwargs):
+        out_F = []
+        for row in x:
+            S = [i for i in range(len(row)) if row[i]]
+            participations = [c.participation() for c in self.clients]
+            loss_val = np.array([p[0] for p in participations])
+            loss_val = np.array([v if v < 1e10 else np.mean(loss_val) for v in loss_val])
+            battery1 = np.array([p[1] for p in participations])
+            battery2 = np.array([p[2] for p in participations])
+            out_F.append([-f1(battery1, battery2, S), -f2(loss_val, S)])
+        out["F"] = np.array(out_F)
+         
+
+def genetic(clients, algorithm="nsga2", generations=20, population_size=100, mutation_rate=0.1):
+    #each element in the population is encoded as a binary vector of length len(clients)
+    options = {
+         "pop_size": population_size,
+            "sampling": pymoo.operators.sampling.rnd.BinaryRandomSampling(),
+            "crossover": pymoo.operators.crossover.sbx.SBX(),
+            "mutation": pymoo.operators.mutation.bitflip.BitflipMutation(mutation_rate),
+            "eliminate_duplicates": True
+    }
+
+    if algorithm == "nsga2":
+         alg = pymoo.algorithms.moo.nsga2.NSGA2(**options)
+    elif algorithm == "age2":
+         alg = pymoo.algorithms.moo.age2.AGEMOEA2(**options)
+
+                                 
+    res = pymoo.optimize.minimize(BatteryLossOptimization(clients), 
+                                    alg, 
+                                    termination=('n_gen', generations),
+                                    seed=1,
+                                    verbose=False)
+
+    F = np.maximum(res.F[:,0], res.F[:,1])
+    best_idx = np.argmax(F)
+    best_solution = res.X[best_idx]
+    return [clients[i] for i in range(len(clients)) if best_solution[i]]
+
+def eafl(clients):
+    return genetic(clients, algorithm="age2")
