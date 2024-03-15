@@ -60,7 +60,7 @@ def Our_Algorithm(clients):                                                  # S
             F1 = [f1(battery1, battery2, list(set(S + [c]))) for c in range(num_clients)]
             F2 = [f2(loss_val, list(set(S + [c]))) for c in range(num_clients)]
             F = np.minimum(F1, F2)
-            l = [i for i in range(num_clients) if i not in S and clients[i].battery > 0]
+            l = [i for i in range(num_clients) if i not in S and clients[i].battery > (clients[i].upload + clients[i].download)]
             if l==[] or max(F[l]) <= current_score:
                 break
             N = []
@@ -80,7 +80,6 @@ def Our_Algorithm(clients):                                                  # S
             S.append(N[max_index])
 
         selected_clients = [clients[c] for c in S]   
-        print("Clients selected this round are:",S)
         return selected_clients
 
 class BatteryLossOptimization(pymoo.core.problem.Problem):

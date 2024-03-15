@@ -88,7 +88,8 @@ class Server():
         else :
             print("Selection Algorithm not recognized. Choosing all the clients")
             selected_clients = self.clients
-        #selected_clients = [c for c in self.clients if c.battery > 0]           # Selecting clients with battery
+        selected_clients = [c for c in selected_clients if c.battery > (c.upload + c.download)]           # Selecting clients with battery
+        print("Clients selected this round are:",[c.cid for c in selected_clients])
         if selected_clients == []:
             return False
         for c in selected_clients:

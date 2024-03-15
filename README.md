@@ -7,13 +7,28 @@ Other dependencies:
 ```
 Package                  Version
 ------------------------ -----------
+about-time               4.2.1
+alive-progress           3.1.5
+autograd                 1.6.2
+cma                      3.2.2
+contourpy                1.2.0
+cycler                   0.12.1
+Deprecated               1.2.14
+dill                     0.3.8
 filelock                 3.13.1
+fonttools                4.49.0
 fsspec                   2024.2.0
+future                   1.0.0
+grapheme                 0.6.0
 Jinja2                   3.1.3
 joblib                   1.3.2
+kiwisolver               1.4.5
+llvmlite                 0.42.0
 MarkupSafe               2.1.5
+matplotlib               3.8.3
 mpmath                   1.3.0
 networkx                 3.2.1
+numba                    0.59.0
 numpy                    1.26.4
 nvidia-cublas-cu12       12.1.3.1
 nvidia-cuda-cupti-cu12   12.1.105
@@ -31,9 +46,13 @@ packaging                24.0
 pillow                   10.2.0
 pip                      22.0.2
 protobuf                 4.25.3
+pymoo                    0.6.1.1
+pyparsing                3.1.2
+python-dateutil          2.9.0.post0
 scikit-learn             1.4.1.post1
 scipy                    1.12.0
 setuptools               59.6.0
+six                      1.16.0
 sympy                    1.12
 tensorboardX             2.6.2.2
 threadpoolctl            3.3.0
@@ -41,6 +60,7 @@ torch                    2.2.1
 torchvision              0.17.1
 triton                   2.2.0
 typing_extensions        4.10.0
+wrapt                    1.16.0
 ```
 
 ! git clone repository
