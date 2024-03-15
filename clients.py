@@ -256,13 +256,14 @@ class Client():
                 break
             self.collection_budget += self.collection                                                         # subtracting the battery spent from the budget +
             if np.random.random() <= self.prob:                                                               # if random number between (0,1) generates > collection probability
-                self.top_slice += 1                                                                           # add one sample by increasing the top slice
                 if self.top_slice >= len(self.dataLoader.dataset):
                     self.top_slice = len(self.dataLoader.dataset)                                             # reached the end of the entire data available
-                    #increase the count of the label
-                    self.label_distribution[self.dataLoader.dataset.get_labels([self.top_slice-1])] += 1
                     print("All the data that could have been collected is collected!")
                     break
+
+                self.top_slice += 1                                                                           # add one sample by increasing the top slice
+                #increase the count of the label
+                self.label_distribution[self.dataLoader.dataset.get_labels([self.top_slice-1])[0]] += 1
         #print("Samples collected per class:",Counter(self.dataLoader.dataset.get_labels(range(self.bottom_slice,self.top_slice))))
         print("Dataset distribution:",Counter(self.dataLoader.dataset.get_labels(range(0,self.top_slice))))
         print("Client collected",str(self.top_slice-start),"samples. Total samples this round = ",self.top_slice-self.bottom_slice,".Overall samples =",self.top_slice,"\n")

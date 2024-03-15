@@ -49,7 +49,6 @@ def dominates(i, j, objectives):                                     # Check if 
 
 def Our_Algorithm(clients):                                                  # Select client function (Need to fix some errors)
         num_clients = len(clients)
-        loss_val = []; battery1 = []; battery2 = []
         participations = [c.participation() for c in clients]
         loss_val = np.array([p[0] for p in participations])
         loss_val = np.array([v if v < 1e10 else np.mean(loss_val) for v in loss_val])
@@ -133,5 +132,13 @@ def genetic(clients, algorithm="nsga2", generations=20, population_size=100, mut
     best_solution = res.X[best_idx]
     return [clients[i] for i in range(len(clients)) if best_solution[i]]
 
-def eafl(clients):
-    return genetic(clients, algorithm="age2")
+def eafl(clients, f=0.25, selected=5):
+    participations = [c.participation() for c in clients]
+    loss_val = np.array([p[0] for p in participations])
+    loss_val = np.array([v if v < 1e10 else np.mean(loss_val) for v in loss_val])
+    battery1 = np.array([p[1] for p in participations])
+    
+    reward = (1-f)*(battery1) + f*loss_val
+
+    selected_clients = [clients[i] for i in np.argsort(reward)[:selected]]
+    return selected_clients
