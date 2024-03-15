@@ -8,9 +8,6 @@ def Loss(model, dataset, device, optimizer, criterion):
     model.eval()
     loss_all = []
     criterion = F.CrossEntropyLoss(reduction='none')
-    #TODO: [AA] do we need to put the batch_size to 1?
-    # reduction='none' should already return the loss for each sample in the batch
-    # and is more efficient
     loader = DataLoader(dataset, shuffle=False, batch_size=dataset.__len__())
     for batch_index, (data, target) in enumerate(loader):
         data, target = data.to(device), target.to(device)
@@ -27,7 +24,11 @@ def Loss(model, dataset, device, optimizer, criterion):
 
     # Calculate influence values outside the loop for efficiency
     total_loss = np.sum(loss_all)
-    I_vals = [loss / total_loss for loss in loss_all]
+    if total_loss == 0:
+        I_vals = np.full(len(loss_all), 1/len(loss_all))
+    else:
+        I_vals = np.array([loss / total_loss for loss in loss_all])
+    #assert not np.isnan(np.sum(I_vals)).any() , "Influence values contain NaNs"
 
     # Optionally, move model back to CPU if not using it on GPU afterwards
     # model.cpu()
@@ -53,5 +54,9 @@ def TracIn(model, dataset, device, optimizer, criterion):
             tracin.extend(tracin_score)
     total_trac = np.sum(tracin)
     #model.cpu()      
-    I_vals = [t / total_trac for t in tracin]
+    if total_trac == 0:
+        I_vals = np.full(len(tracin), 1/len(tracin))
+    else:
+        I_vals = np.array([t / total_trac for t in tracin])
+    #assert not np.isnan(np.sum(I_vals)).any() , "Influence values contain NaNs"
     return I_vals, np.mean(np.array(loss_all))

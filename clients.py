@@ -118,15 +118,17 @@ class Client():
                 return entropy_value >= self.threshold                                             # If it is higher than threshold then diversity passed
     
     def update_reputation(self, indices) :                                                                   # Updating reputation of the passed samples
+        #assert not np.isnan(self.reputation).any() , "Reputation has nan values before update"
         shuffled = np.random.permutation(indices)
         if self.reputation_method == 'loss' :
             I_vals, _ = Loss(self.model, self.dataset, self.device, self.optimizer, self.criterion)
         elif self.reputation_method == 'tracin' :
             I_vals, _ = TracIn(self.model, self.dataset, self.device, self.optimizer, self.criterion)
             
-        for idx, val in enumerate(shuffled) :    
-            self.reputation[val] = self.alpha*self.reputation[val] + (1 - self.alpha)*I_vals[idx]            # Updating with alpha
+        self.reputation[shuffled] *= self.alpha 
+        self.reputation[shuffled] += (1 - self.alpha)*I_vals
         print("Reputation Updated\n")    
+        #assert not np.isnan(self.reputation).any() , "Reputation has nan values after update"
 
     def select_older_data(self):                                                                             # Selecting older data
         if self.bottom_slice != self.top_slice :
@@ -156,6 +158,8 @@ class Client():
             for c,num in counts.items() :
                 idx = np.asarray(comp==c).nonzero()[0]
                 r = self.reputation[idx]
+                #no nan in r
+                #assert not np.isnan(r).any() , "Reputation has nan values"
                 req = max(0, -(self.bottom_slice//-num_classes))                                                     # here the required is just the whole thing
                 if len(idx) :
                     samples = np.random.choice(idx, req, p = np.exp(r/self.gamma)/np.sum(np.exp(r/self.gamma)))      # same process
@@ -232,17 +236,24 @@ class Client():
             print(" Used around",self.training_budget,"battery")
             print("Average loss on the data = ", self.losses[-1],"                           (It is infinite if the data trained on is less than batch_size)\n")
             total_indices = np.array(range(self.top_slice))                                                           # all the samples that we have right now
-            for i in np.delete(total_indices,np.argwhere(np.isin(total_indices, training_indices))) :                 # ones whose reputation wasn't updated yet
-                if self.reputation[i] < self.mu :
-                    self.reputation[i] = self.mu*self.reputation[i] + (1 - self.beta)*self.reputation[i]              # pardoning
+
+            #select all the values that are not in the training indices
+            #assert not np.isnan(self.reputation).any() , "Reputation has nan values before pardoning"
+            unused_samples = np.array([i for i in total_indices if i not in training_indices], dtype=np.int64)                         # ones whose reputation wasn't updated yet
+            low_reputation_unused = unused_samples[np.where(self.reputation[unused_samples] < self.mu)]               
+            self.reputation[low_reputation_unused] *= (1-self.beta)                                                     # pardoning
+            self.reputation[low_reputation_unused] += self.mu*self.beta
+            #assert not np.isnan(self.reputation).any() , "Reputation has nan values after pardoning"
+
             if flag : # if budget exceeded or converged, break
                 print("Early stopping training")
                 break
         
     def collect_data(self):                                                                         # collects data
-        loc = self.bottom_slice                                                            # if called from train function check diversity of data collected this round
+        loc = self.bottom_slice                             
         print("Collecting data...(Check diversity function is too slow so it takes a lot of time)")
         start = self.top_slice
+        mean_reputation = np.mean(self.reputation[:self.top_slice]) if self.top_slice > 0 else 0
         while True:     
             # if diversity is matched or budget will be insufficient to train
             if self.top_slice - loc >= self.training_size:
@@ -265,6 +276,10 @@ class Client():
                 #increase the count of the label
                 self.label_distribution[self.dataLoader.dataset.get_labels([self.top_slice-1])[0]] += 1
         #print("Samples collected per class:",Counter(self.dataLoader.dataset.get_labels(range(self.bottom_slice,self.top_slice))))
+
+        #assert not np.isnan(self.reputation).any() , "Reputation has nan values before new element"
+        self.reputation[start:self.top_slice] = mean_reputation
+        #assert not np.isnan(self.reputation).any() , "Reputation has nan values after new element"
         print("Dataset distribution:",Counter(self.dataLoader.dataset.get_labels(range(0,self.top_slice))))
         print("Client collected",str(self.top_slice-start),"samples. Total samples this round = ",self.top_slice-self.bottom_slice,".Overall samples =",self.top_slice,"\n")
         #if (self.collection_budget < self.size*self.collection) : print("Ran out of collection battery quota")        # if ran out of collection budget     
@@ -349,7 +364,7 @@ class Client():
 
 
     def update(self):                                                                    # Updating the model parameters so that server can get them
-        assert self.isTrained, 'nothing to update, call train() to obtain gradients'
+        #assert self.isTrained, 'nothing to update, call train() to obtain gradients'
         newState = self.model.state_dict()
         for param in self.originalState:
             self.stateChange[param] = newState[param] - self.originalState[param]
