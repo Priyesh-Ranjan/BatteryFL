@@ -20,7 +20,7 @@ def parse_args():
     parser.add_argument("--dataset", type=str, choices=["mnist", "cifar", "cifar100", "imdb", "DDSM"], default="mnist")
     parser.add_argument("--loader_type", type=str, choices=["iid", "byLabel", "dirichlet"], default="iid")
     parser.add_argument("--loader_path", type=str, default="./data/loader.pk", help="where to save the data partitions")
-    parser.add_argument("--AR", type=str, default='fedavg')
+    parser.add_argument("--AR", type=str, default='fednova')
     parser.add_argument("--save_model_weights", action="store_true")
     parser.add_argument("--experiment_name", type=str)
     parser.add_argument("--path_to_aggNet", type=str)
