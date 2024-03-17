@@ -6,8 +6,8 @@ def fednova(input, data_ratio, norm_vector):
 
     x = input.squeeze(0)
     w = data_ratio*np.sum(norm_vector*data_ratio)/norm_vector
-    w = w/ w.sum()
-    print("Weights while aggregation are:",w)
+    #w = w/ w.sum()
+    print("Ratio of the different client weights while aggregation are:",w)
     out = torch.sum(x* w, dim=1, keepdim=True)
     return out
 
