@@ -155,6 +155,8 @@ class Server():
             self.AR = self.FedAvg
         elif ar == 'median':
             self.AR = self.FedMedian
+        elif ar == 'fednova':
+            self.AR = self.FedNova
         else:
             raise ValueError("Not a valid aggregation rule or aggregation rule not implemented")
 
@@ -164,6 +166,17 @@ class Server():
 
     def FedMedian(self, clients):
         out = self.FedFuncWholeNet(clients, lambda arr: torch.median(arr, dim=-1, keepdim=True)[0])
+        return out
+    
+    def FedNova(self, clients):
+        from utils.fednova import Net
+        norm_vector = []
+        data_ratio = []
+        for c in clients:
+            norm_vector.append(c.local_normalizing_vec)
+            data_ratio.append(c.data_size)
+        self.Net = Net(np.array(norm_vector), np.array(data_ratio)/np.sum(np.array(data_ratio))) 
+        out = self.FedFuncWholeNet(clients, lambda arr: Net().cpu()(arr.cpu()))
         return out
     
         ## Helper functions, act as adaptor from aggregation function to the federated learning system##
@@ -176,7 +189,7 @@ class Server():
         deltas = [c.getDelta() for c in clients]
         vecs = [utils.net2vec(delta) for delta in deltas]
         vecs = [vec for vec in vecs if torch.isfinite(vec).all().item()]
-        result = func(torch.stack(vecs, 1).unsqueeze(0))  # input as 1 by d by n
+        result = func(torch.stack(vecs, 1).unsqueeze(0))
         result = result.view(-1)
         utils.vec2net(result, Delta)
         return Delta

@@ -14,7 +14,7 @@ from utils.diversity import Entropy
 
 class Client():
     def __init__(self, cid, battery, model, dataLoader, optimizer, criterion=F.nll_loss, 
-                 reputation_method = 'loss', device='cpu', batch_size = 64,
+                 reputation_method = 'loss', device='cpu', batch_size = 64, momentum = 0.5,
                  upload_battery=3, download_battery=0.3, collection_battery=0.002, training_battery=0.002, collection_size=100, collection_prob = 0.95,
                  alpha=0.5, beta=0.5, gamma=0.5, mu=0.5, training_size = 200, entropy_threshold = 0.7, round_budget = 10):
         self.cid = cid
@@ -51,6 +51,9 @@ class Client():
         self.label_distribution = [0 for _ in range(self.num_classes)]
         self.collection_budget = 0
         self.training_budget = 0
+        self.local_normalizing_vec = 0
+        self.data_size = 0
+        self.momentum = momentum
 
     def init_stateChange(self):
         states = deepcopy(self.model.state_dict())
@@ -196,6 +199,8 @@ class Client():
         if self.top_slice == 0:
             print("No data to train on")
             return
+        local_counter = 0
+        self.local_normalizing_vec = 0
         for e in range(inner_epochs):                                                                                 # training for the given rounds
             print("Round",e+1,"\n")
             #TODO [AA] : Where are the training indices used? The dataloader does not consider them!!
@@ -227,6 +232,9 @@ class Client():
                 ind += len(data)
                 self.training_budget += (self.batch_size)*self.training                                           # budget is decreased by the amount training is done
                 self.losses.append(loss_sum/(self.batch_size))                                                    # average of loss being appended
+                # For FedNova
+                local_counter = local_counter * self.momentum + 1
+                self.local_normalizing_vec += local_counter
 
             self.isTrained = True
             self.model.cpu()  ## avoid occupying gpu when idle
@@ -236,6 +244,7 @@ class Client():
             print(" Used around",self.training_budget,"battery")
             print("Average loss on the data = ", self.losses[-1],"                           (It is infinite if the data trained on is less than batch_size)\n")
             total_indices = np.array(range(self.top_slice))                                                           # all the samples that we have right now
+            self.data_size = len(training_indices)
 
             #select all the values that are not in the training indices
             #assert not np.isnan(self.reputation).any() , "Reputation has nan values before pardoning"
