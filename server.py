@@ -176,7 +176,7 @@ class Server():
             norm_vector.append(c.local_normalizing_vec)
             data_ratio.append(c.data_size)
         self.Net = Net
-        out = self.FedFuncWholeNet(clients, lambda arr: Net(data_ratio = np.array(data_ratio)/np.sum(np.array(data_ratio))).cpu()(arr.cpu()), normalized_vector_vals = np.array(norm_vector))
+        out = self.FedFuncWholeNet(clients, lambda arr: Net(data_ratio = np.array(data_ratio)/np.sum(np.array(data_ratio)).cpu()(arr.cpu()), normalized_vector_vals = np.array(norm_vector)))
         return out
     
         ## Helper functions, act as adaptor from aggregation function to the federated learning system##
