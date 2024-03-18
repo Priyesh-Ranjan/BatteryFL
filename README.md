@@ -1,9 +1,7 @@
 # EIFFEL
-Code for the paper - EIFFEL
+Code for the paper - EIFFEL<br>
 
-Need to install tensorboard - pip install tensorboardX<br>
-
-Other dependencies:
+Dependencies:
 ```
 Package                  Version
 ------------------------ -----------
