@@ -5,18 +5,35 @@ import pickle
 import torch
 import torch.nn as nn
 from torchvision import datasets, transforms
-from torchvision.models import vgg16
-#import torch.nn.functional as F
+import torchvision.models as models
+import pytorch_lightning as pl
+import torch.nn.functional as F
 
 from dataloader import *
 
 
-def Net():
-    num_classes = 10
-    model = vgg16(pretrained = True)
-    input_lastLayer = model.classifier[6].in_features
-    model.classifier[6] = nn.Linear(input_lastLayer,num_classes)
-    return model
+class MobileNetV3_Transformed(pl.LightningModule):
+    def __init__(self, num_classes=10):
+        super(MobileNetV3_Transformed, self).__init__()
+        mobilenetv3 = models.mobilenet_v3_large(pretrained=True)
+        
+        self.features = mobilenetv3.features
+        
+        num_features = mobilenetv3.classifier[0].in_features
+        
+        self.classifier = nn.Sequential(
+            nn.Linear(num_features, 512),
+            nn.ReLU(inplace=True),
+            nn.Dropout(0.5),
+            nn.Linear(512, num_classes)
+        )
+        
+    def forward(self, x):
+        x = self.features(x)
+        x = F.adaptive_avg_pool2d(x, (1, 1))
+        x = torch.flatten(x, 1)
+        x = self.classifier(x)
+        return x
 
 def getDataset():
     dataset = datasets.CIFAR10('./data',
