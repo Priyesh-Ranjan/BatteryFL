@@ -44,19 +44,12 @@ def main(args):
         testData = cifar.test_dataloader(args.test_batch_size)
         Net = cifar.Net
         criterion = F.cross_entropy
-    elif args.dataset == 'cifar100':
-        from tasks import cifar100
-        trainData = cifar100.train_dataloader(args.num_clients, loader_type=args.loader_type, path=args.loader_path,
-                                              store=False)
-        testData = cifar100.test_dataloader(args.test_batch_size)
-        Net = cifar100.Net
-        criterion = F.cross_entropy
-    elif args.dataset == 'imdb':
-        from tasks import imdb
-        trainData = imdb.train_dataloader(args.num_clients, loader_type=args.loader_type, path=args.loader_path,
+    elif args.dataset == 'agro':
+        from tasks import agro
+        trainData = agro.train_dataloader(args.num_clients, loader_type=args.loader_type, path=args.loader_path,
                                           store=False)
-        testData = imdb.test_dataloader(args.test_batch_size)
-        Net = imdb.Net
+        testData = agro.test_dataloader(args.test_batch_size)
+        Net = agro.Net
         criterion = F.cross_entropy
 
     # create server instance
