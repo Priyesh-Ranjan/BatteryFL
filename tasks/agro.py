@@ -12,9 +12,9 @@ import torch.nn.functional as F
 from dataloader import *
 
 
-class MobileNetV3_Transformed(pl.LightningModule):
+class Net(pl.LightningModule):
     def __init__(self, num_classes=10):
-        super(MobileNetV3_Transformed, self).__init__()
+        super(Net, self).__init__()
         mobilenetv3 = models.mobilenet_v3_large(pretrained=True)
         
         self.features = mobilenetv3.features
