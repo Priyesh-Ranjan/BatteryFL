@@ -8,12 +8,15 @@ from tensorboardX import SummaryWriter
 from clients import *
 from server import Server
 
-def writing_function(writer, text, loss, accuracy, F1, conf, steps):
-    writer.add_scalar(str(text)+'/loss', loss, steps)
-    writer.add_scalar(str(text)+'/accuracy', accuracy, steps)
-    writer.add_scalar(str(text)+'/F1', F1, steps)
-    writer.add_scalars(str(text)+'/conf', {"True Pos" : conf[0,0], "False Pos" : conf[0,1],
-                                         "False Neg" : conf[1,0], "True Neg" : conf[1,1]}, steps)
+def writing_function(writer, text, client, testData, step):
+    loss, accuracy, F1, conf = client.test(testData)
+    writer.add_scalar("Client"+str(text)+'test/loss', loss, step)
+    writer.add_scalar("Client"+str(text)+'test/accuracy', accuracy, step)
+    writer.add_scalar("Client"+str(text)+'test/F1', F1, step)
+    writer.add_scalars("Client"+str(text)+'test/conf', {"True Pos" : conf[0,0], "False Pos" : conf[0,1],
+                                         "False Neg" : conf[1,0], "True Neg" : conf[1,1]}, step)
+    writer.add_scalar("Client"+str(text)+'train_loss', client.losses[-1], step)
+    writer.add_scalar("Client"+str(text)+'battery_level', client.report_battery(), step)
 
 def main(args):
     print('#####################')
@@ -100,7 +103,11 @@ def main(args):
         if not(server.do()):
             print('No clients have any battery left')
             break
-        writing_function(writer, "test", loss, accuracy, F1, conf, step)
+        writer.add_scalar('Server/loss', loss, step)
+        writer.add_scalar('Server/accuracy', accuracy, step)
+        writer.add_scalar('Server/F1', F1, step)
+        writer.add_scalars('Server/conf', {"True Pos" : conf[0,0], "False Pos" : conf[0,1],
+                                             "False Neg" : conf[1,0], "True Neg" : conf[1,1]}, step)
 
         #         server.train_concurrent(group)
         for i, client in enumerate(clients_list) :
@@ -108,8 +115,8 @@ def main(args):
             #writing_function(writer, "client"+str(i)+'train', loss, accuracy, F1, conf, steps)
 
 
-            loss, accuracy, F1, conf = client.test(testData)
-            writing_function(writer, "client"+str(i)+'test', loss, accuracy, F1, conf, step)
+            #loss, accuracy, F1, conf = client.test(testData)
+            writing_function(writer, str(i), client, testData, step)
             
             print("Client", i, "now has", client.report_battery() ,"battery left \n")
 
