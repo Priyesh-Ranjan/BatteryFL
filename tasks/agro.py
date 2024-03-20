@@ -36,7 +36,7 @@ class Net(pl.LightningModule):
         return x
 
 def getDataset():
-    dataset = datasets.ImageFolder('./data/insects/train',
+    dataset = datasets.ImageFolder('./data/insect/train',
                                train=True,
                                download=False,
                                transform = transforms.Compose([
