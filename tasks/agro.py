@@ -40,12 +40,11 @@ def getDataset():
                                train=True,
                                download=False,
                                transform = transforms.Compose([
-    transforms.Resize(size=(224, 224)),
-    transforms.ToTensor(),
-    transforms.Normalize( 
-       (0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010) 
-    )
-]))
+    transforms.Resize((224, 224)),
+    transforms.RandomHorizontalFlip(),
+    transforms.RandomRotation(10),
+    transforms.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.2),
+    transforms.ToTensor()]))
     return dataset
 
 
@@ -84,11 +83,11 @@ def train_dataloader(num_clients, loader_type='iid', store=True, path='./data/lo
 def test_dataloader(test_batch_size):
     test_loader = torch.utils.data.DataLoader(
         datasets.ImageFolder('./data/insect/test', train=False, transform = transforms.Compose([
-    transforms.Resize(size=(224, 224)),
+    transforms.Resize((224, 224)),
+    transforms.RandomHorizontalFlip(),
+    transforms.RandomRotation(10),
+    transforms.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.2),
     transforms.ToTensor(),
-    transforms.Normalize( 
-       (0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010) 
-    )
 ])), batch_size=test_batch_size, shuffle=True)
     return test_loader
 
