@@ -3,7 +3,6 @@
 __pycache__/*
 utils/__pycache__/*
 logs/*
-data/*
 ```
 
 *.cpython-37.pyc
