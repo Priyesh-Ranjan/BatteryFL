@@ -13,7 +13,7 @@ from dataloader import *
 
 
 class Net(pl.LightningModule):
-    def __init__(self, num_classes=10):
+    def __init__(self, num_classes=15):
         super(Net, self).__init__()
         mobilenetv3 = models.mobilenet_v3_large(pretrained=True)
         
