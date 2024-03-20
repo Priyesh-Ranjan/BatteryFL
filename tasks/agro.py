@@ -36,9 +36,9 @@ class Net(pl.LightningModule):
         return x
 
 def getDataset():
-    dataset = datasets.CIFAR10('./data',
+    dataset = datasets.ImageFolder('./data/insects/train',
                                train=True,
-                               download=True,
+                               download=False,
                                transform = transforms.Compose([
     transforms.Resize(size=(224, 224)),
     transforms.ToTensor(),
@@ -83,7 +83,7 @@ def train_dataloader(num_clients, loader_type='iid', store=True, path='./data/lo
 
 def test_dataloader(test_batch_size):
     test_loader = torch.utils.data.DataLoader(
-        datasets.CIFAR10('./data', train=False, transform = transforms.Compose([
+        datasets.ImageFolder('./data/insect/test', train=False, transform = transforms.Compose([
     transforms.Resize(size=(224, 224)),
     transforms.ToTensor(),
     transforms.Normalize( 
