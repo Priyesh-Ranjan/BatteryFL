@@ -27,6 +27,7 @@ class Server():
         self.savePath = './AggData'
         self.criterion = criterion
         self.client_selection = client_selection
+        self.selected_clients = []
 
     def init_stateChange(self):
         states = deepcopy(self.model.state_dict())
@@ -78,29 +79,29 @@ class Server():
 
     def do(self):                                                              # One round of communication, client training is asynchronous
         if self.client_selection == 'ours' :
-            selected_clients = client_selection.Our_Algorithm(self.clients)
+            self.selected_clients = client_selection.Our_Algorithm(self.clients)
         elif self.client_selection == 'AGE' :
-            selected_clients = client_selection.genetic(self.clients, algorithm="age2")
+            self.selected_clients = client_selection.genetic(self.clients, algorithm="age2")
         elif self.client_selection == 'NSGA' :    
-            selected_clients = client_selection.genetic(self.clients, algorithm="nsga2")
+            self.selected_clients = client_selection.genetic(self.clients, algorithm="nsga2")
         elif self.client_selection == "EAFL" :
-            selected_clients = client_selection.eafl(self.clients)
+            self.selected_clients = client_selection.eafl(self.clients)
         else :
             print("Selection Algorithm not recognized. Choosing all the clients")
-            selected_clients = self.clients
-        selected_clients = [c for c in selected_clients if c.battery > (c.upload + c.download)]           # Selecting clients with battery
-        print("Clients selected this round are:",[c.cid for c in selected_clients])
-        if selected_clients == []:
+            self.selected_clients = self.clients
+        self.selected_clients = [c for c in self.selected_clients if c.battery > (c.upload + c.download)]           # Selecting clients with battery
+        print("Clients selected this round are:",[c.cid for c in self.selected_clients])
+        if self.selected_clients == []:
             return False
-        for c in selected_clients:
+        for c in self.selected_clients:
             c.setModelParameter(self.model.state_dict())                       # distribute server model to clients
             c.perform_task()                                                   # selected clients will perform the FSM
 
         if self.isSaveChanges:
-            self.saveChanges(selected_clients)
+            self.saveChanges(self.selected_clients)
 
         tic = time.perf_counter()
-        Delta = self.AR(selected_clients)                                      # Getting model weights from the clients
+        Delta = self.AR(self.selected_clients)                                      # Getting model weights from the clients
         toc = time.perf_counter()
         print("----------------------------------------------------------------")
         print("\n")
