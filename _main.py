@@ -80,7 +80,7 @@ def main(args):
                           optimizer = optimizer, criterion = criterion, reputation_method = method, device = device, 
                           batch_size = args.batch_size, 
                           upload_battery = args.upload_battery, download_battery = args.download_battery, 
-                          collection_battery = args.collection_battery, training_battery = args.training_battery, 
+                          collection_battery = args.collection_battery, 
                           collection_size = args.collection_size, collection_prob = args.collection_success_chance, training_size = args.training_size,
                           entropy_threshold = args.entropy_threshold, momentum = args.momentum)
         server.attach(client_i)
