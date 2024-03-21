@@ -43,7 +43,7 @@ class Client():
         self.upload = upload_battery
         self.download = download_battery
         self.collection = collection_battery
-        self.training = 0.002
+        self.training = np.random.uniform(1.5,2)*np.random.uniform(5,15)/10**6
         self.threshold = entropy_threshold                                     # threshold for the entropy method
         self.round_budget = round_budget                                       # Round budget in the beginning, remains same over the entire round
         self.training_size = training_size                                     # Size of training that will happen in a round, pre-defined based on dataset
