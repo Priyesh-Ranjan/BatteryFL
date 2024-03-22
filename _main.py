@@ -14,7 +14,7 @@ def writing_function(writer, text, client, testData, step):
     writer.add_scalar("Client"+str(text)+'test/loss', loss, step)
     writer.add_scalar("Client"+str(text)+'test/accuracy', accuracy, step)
     writer.add_scalar("Client"+str(text)+'test/F1', F1, step)
-    writer.add_scalar("Client"+str(text)+'test/conf', {"True Pos" : conf[0,0], "False Pos" : conf[0,1],
+    writer.add_scalars("Client"+str(text)+'test/conf', {"True Pos" : conf[0,0], "False Pos" : conf[0,1],
                                          "False Neg" : conf[1,0], "True Neg" : conf[1,1]}, step)
     writer.add_scalar("Client"+str(text)+'train_loss', client.losses[-1], step)
     writer.add_scalar("Client"+str(text)+'battery_level', client.report_battery(), step)
@@ -107,7 +107,7 @@ def main(args):
         writer.add_scalar('Server/loss', loss, step)
         writer.add_scalar('Server/accuracy', accuracy, step)
         writer.add_scalar('Server/F1', F1, step)
-        writer.add_scalar('Server/conf', {"True Pos" : conf[0,0], "False Pos" : conf[0,1],
+        writer.add_scalars('Server/conf', {"True Pos" : conf[0,0], "False Pos" : conf[0,1],
                                              "False Neg" : conf[1,0], "True Neg" : conf[1,1]}, step)
         writer.add_scalar("Server/selected_clients", np.array(server.selected_clients), step)
 
