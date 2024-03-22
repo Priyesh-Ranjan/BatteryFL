@@ -26,9 +26,9 @@ def parse_args():
     parser.add_argument("--path_to_aggNet", type=str)
     parser.add_argument("--device", type=str, choices=["cuda", "cpu"], default='cuda')
     #parser.add_argument("--inner_epochs", type=int, default=1)
-    parser.add_argument("--upload_battery", type=float, default = 3)
-    parser.add_argument("--download_battery", type=float, default = 3)
-    parser.add_argument("--collection_battery", type=float, default = 0.001)
+    #parser.add_argument("--upload_battery", type=float, default = 3)
+    #parser.add_argument("--download_battery", type=float, default = 3)
+    parser.add_argument("--collection_battery_ratio", type=float, default = 1)
     parser.add_argument("--collection_size", type=int, default = 1000)
     parser.add_argument("--collection_success_chance", type=float, default = 0.95)
     #parser.add_argument("--training_battery", type=float, default = 0.002)
@@ -40,8 +40,7 @@ def parse_args():
     parser.add_argument("--mu", type=float, default = 0.5)
     parser.add_argument("--training_size", type=int, default = 400)
     parser.add_argument("--entropy_threshold", type=float, default = 0.5)
-    parser.add_argument("--collection_budget", type=float, default = 10)
-    parser.add_argument("--training_budget", type=float, default = 10)
+    parser.add_argument("--round_budget", type=float, default = 10)
 
     args = parser.parse_args()
 

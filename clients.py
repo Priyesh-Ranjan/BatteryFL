@@ -15,7 +15,7 @@ from utils.diversity import Entropy
 class Client():
     def __init__(self, cid, battery, model, dataLoader, optimizer, criterion=F.nll_loss, 
                  reputation_method = 'loss', device='cpu', batch_size = 64, momentum = 0.5,
-                 upload_battery=3, download_battery=0.3, collection_battery=0.002, collection_size=100, collection_prob = 0.95,
+                 collection_size=100, collection_prob = 0.95,
                  alpha=0.5, beta=0.5, gamma=0.5, mu=0.5, training_size = 200, entropy_threshold = 0.7, round_budget = 10):
         self.cid = cid
         self.prob = collection_prob                                            # probability of collection operation succeeding
@@ -40,9 +40,9 @@ class Client():
         self.gamma = gamma                                                     # Gamma value for the reputation update
         self.mu = mu                                                           # Mu value for the reputation update
         self.batch_size = batch_size                                           # training batch size
-        self.upload = upload_battery
-        self.download = download_battery
-        self.collection = collection_battery
+        self.upload = 0
+        self.download = 0
+        self.collection = 0
         self.training = np.random.uniform(1.5,2)*np.random.uniform(5,15)/10**6
         self.threshold = entropy_threshold                                     # threshold for the entropy method
         self.round_budget = round_budget                                       # Round budget in the beginning, remains same over the entire round
@@ -60,6 +60,20 @@ class Client():
         for param, values in states.items():
             values *= 0
         self.stateChange = states
+        
+    def init_collection_battery(self, scaling_factor):
+        self.collection = scaling_factor*self.training
+    
+    def init_update_battery(self):
+        param_size = 0
+        for param in self.model.parameters():
+            param_size += param.nelement() * param.element_size()
+        buffer_size = 0
+        for buffer in self.model.buffers():
+            buffer_size += buffer.nelement() * buffer.element_size()
+        size = param_size+buffer_size    
+        self.upload = size*0
+        self.download = self.upload/30
 
     def setModelParameter(self, states):
         self.model.load_state_dict(deepcopy(states))

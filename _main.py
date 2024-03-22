@@ -78,11 +78,11 @@ def main(args):
             optimizer = optim.Adam(model.parameters(), lr=args.lr)
         client_i = Client(cid = i, battery = battery, model = model, dataLoader = trainData[i], 
                           optimizer = optimizer, criterion = criterion, reputation_method = method, device = device, 
-                          batch_size = args.batch_size, 
-                          upload_battery = args.upload_battery, download_battery = args.download_battery, 
-                          collection_battery = args.collection_battery, 
+                          batch_size = args.batch_size, round_budget = args.round_budget,
                           collection_size = args.collection_size, collection_prob = args.collection_success_chance, training_size = args.training_size,
                           entropy_threshold = args.entropy_threshold, momentum = args.momentum)
+        client_i.init_update_battery()
+        client_i.init_collection_battery(args.collection_battery_ratio)
         server.attach(client_i)
         clients_list.append(client_i)
         print("Client",i,"initialized with", client_i.report_battery(), "battery")
