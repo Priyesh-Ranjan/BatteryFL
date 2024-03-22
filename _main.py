@@ -107,9 +107,9 @@ def main(args):
         writer.add_scalar('Server/loss', loss, step)
         writer.add_scalar('Server/accuracy', accuracy, step)
         writer.add_scalar('Server/F1', F1, step)
-        writer.add_scalars('Server/conf', {"True Pos" : conf[0,0], "False Pos" : conf[0,1],
+        writer.add_scalar('Server/conf', {"True Pos" : conf[0,0], "False Pos" : conf[0,1],
                                              "False Neg" : conf[1,0], "True Neg" : conf[1,1]}, step)
-        writer.add_scalars("Server/selected_clients", np.array(server.selected_clients), step)
+        writer.add_scalar("Server/selected_clients", np.array(server.selected_clients), step)
 
         #         server.train_concurrent(group)
         for i, client in enumerate(clients_list) :
