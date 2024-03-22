@@ -109,7 +109,7 @@ def main(args):
         writer.add_scalar('Server/F1', F1, step)
         writer.add_scalars('Server/conf', {"True Pos" : conf[0,0], "False Pos" : conf[0,1],
                                              "False Neg" : conf[1,0], "True Neg" : conf[1,1]}, step)
-        writer.add_scalar("Server/selected_clients", server.get_selected_clients())
+        writer.add_histogram("Server/selected_clients", server.get_selected_clients())
 
         #         server.train_concurrent(group)
         for i, client in enumerate(clients_list) :
