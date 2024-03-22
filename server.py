@@ -37,6 +37,10 @@ class Server():
 
     def attach(self, c):
         self.clients.append(c)
+        
+    def get_selected_clients(self):
+        clients = [client.cid for client in self.selected_clients]
+        return clients
 
     def test(self):
         print("-----------------------------Server-----------------------------")
