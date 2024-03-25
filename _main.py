@@ -10,7 +10,7 @@ from server import Server
 import numpy as np
 import matplotlib.pyplot as plt
 
-def writing_function(writer, text, client, testData, step):
+def client_writing_function(writer, text, client, testData, step):
     loss, accuracy, F1, conf = client.test(testData)
     writer.add_scalar("Client_"+str(text)+'_test/loss', loss, global_step = step)
     writer.add_scalar("Client_"+str(text)+'_test/accuracy', accuracy, global_step = step)
@@ -121,7 +121,7 @@ def main(args):
             #writing_function(writer, "client"+str(i)+'train', loss, accuracy, F1, conf, steps)
 
             #loss, accuracy, F1, conf = client.test(testData)
-            writing_function(writer, str(i), client, testData, step)
+            client_writing_function(writer, str(i), client, testData, step)
             
             print("Client", i, "now has", client.report_battery() ,"battery left \n")
 
