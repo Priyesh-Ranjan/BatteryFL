@@ -41,6 +41,7 @@ def main(args):
         testData = mnist.test_dataloader(args.test_batch_size)
         Net = mnist.Net
         criterion = F.cross_entropy
+        num_classes = 10
     elif args.dataset == 'cifar':
         from tasks import cifar
         trainData = cifar.train_dataloader(args.num_clients, loader_type=args.loader_type, path=args.loader_path,
@@ -48,6 +49,7 @@ def main(args):
         testData = cifar.test_dataloader(args.test_batch_size)
         Net = cifar.Net
         criterion = F.cross_entropy
+        num_classes = 10
     elif args.dataset == 'agro':
         from tasks import agro
         trainData = agro.train_dataloader(args.num_clients, loader_type=args.loader_type, path=args.loader_path,
@@ -55,6 +57,7 @@ def main(args):
         testData = agro.test_dataloader(args.test_batch_size)
         Net = agro.Net
         criterion = F.cross_entropy
+        num_classes = 15
 
     # create server instance
     model0 = Net()
@@ -81,7 +84,7 @@ def main(args):
                           optimizer = optimizer, criterion = criterion, reputation_method = method, device = device, 
                           batch_size = args.batch_size, round_budget = args.round_budget,
                           collection_size = args.collection_size, collection_prob = args.collection_success_chance, training_size = args.training_size,
-                          entropy_threshold = args.entropy_threshold, momentum = args.momentum)
+                          entropy_threshold = args.entropy_threshold, momentum = args.momentum, num_classes = num_classes)
         client_i.init_update_battery()
         client_i.init_collection_battery(args.collection_battery_ratio)
         server.attach(client_i)

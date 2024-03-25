@@ -16,7 +16,7 @@ class Client():
     def __init__(self, cid, battery, model, dataLoader, optimizer, criterion=F.nll_loss, 
                  reputation_method = 'loss', device='cpu', batch_size = 64, momentum = 0.5,
                  collection_size=100, collection_prob = 0.95,
-                 alpha=0.5, beta=0.5, gamma=0.5, mu=0.5, training_size = 200, entropy_threshold = 0.7, round_budget = 10):
+                 alpha=0.5, beta=0.5, gamma=0.5, mu=0.5, training_size = 200, entropy_threshold = 0.7, round_budget = 10, num_classes = 10):
         self.cid = cid
         self.prob = collection_prob                                            # probability of collection operation succeeding
         self.battery = battery                                                 # amount of battery client has
@@ -47,7 +47,7 @@ class Client():
         self.threshold = entropy_threshold                                     # threshold for the entropy method
         self.round_budget = round_budget                                       # Round budget in the beginning, remains same over the entire round
         self.training_size = training_size                                     # Size of training that will happen in a round, pre-defined based on dataset
-        self.num_classes = len(Counter(dataLoader.dataset.targets))
+        self.num_classes = num_classes
         self.label_distribution = [0 for _ in range(self.num_classes)]
         self.collection_budget = 0
         self.training_budget = 0
