@@ -12,13 +12,13 @@ import matplotlib.pyplot as plt
 
 def writing_function(writer, text, client, testData, step):
     loss, accuracy, F1, conf = client.test(testData)
-    writer.add_scalar("Client_"+str(text)+'_test/loss', loss, step)
-    writer.add_scalar("Client_"+str(text)+'_test/accuracy', accuracy, step)
-    writer.add_scalar("Client_"+str(text)+'_test/F1', F1, step)
+    writer.add_scalar("Client_"+str(text)+'_test/loss', loss, global_step = step)
+    writer.add_scalar("Client_"+str(text)+'_test/accuracy', accuracy, global_step = step)
+    writer.add_scalar("Client_"+str(text)+'_test/F1', F1, global_step = step)
     fig = plt.figure(); plt.imshow(conf, cmap='gray', vmin=0, vmax=255)
-    writer.add_scalars("Client_"+str(text)+'_test/conf', fig, step)
-    writer.add_scalar("Client_"+str(text)+'_train_loss', client.losses[-1], step)
-    writer.add_scalar("Client_"+str(text)+'_battery_level', client.report_battery(), step)
+    writer.add_figure("Client_"+str(text)+'_test/conf', fig, global_step = step)
+    writer.add_scalar("Client_"+str(text)+'_train_loss', client.losses[-1], global_step = step)
+    writer.add_scalar("Client_"+str(text)+'_battery_level', client.report_battery(), global_step = step)
 
 def main(args):
     print('#####################')
@@ -108,12 +108,12 @@ def main(args):
         if not(server.do()):
             print('No clients have any battery left')
             break
-        writer.add_scalar('Server/loss', loss, step)
-        writer.add_scalar('Server/accuracy', accuracy, step)
-        writer.add_scalar('Server/F1', F1, step)
+        writer.add_scalar('Server/loss', loss, global_step = step)
+        writer.add_scalar('Server/accuracy', accuracy, global_step = step)
+        writer.add_scalar('Server/F1', F1, global_step = step)
         fig = plt.figure(); plt.imshow(conf, cmap='gray', vmin=0, vmax=255)
-        writer.add_figure('Server/conf', fig, step)
-        writer.add_histogram("Server/selected_clients", server.get_selected_clients())
+        writer.add_figure('Server/conf', fig, global_step = step)
+        writer.add_histogram("Server/selected_clients", server.get_selected_clients(), global_step = step)
 
         #         server.train_concurrent(group)
         for i, client in enumerate(clients_list) :
