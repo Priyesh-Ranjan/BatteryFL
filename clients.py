@@ -47,7 +47,7 @@ class Client():
         self.threshold = entropy_threshold                                     # threshold for the entropy method
         self.round_budget = round_budget                                       # Round budget in the beginning, remains same over the entire round
         self.training_size = training_size                                     # Size of training that will happen in a round, pre-defined based on dataset
-        self.num_classes = 10
+        self.num_classes = len(Counter(dataLoader.dataset.targets))
         self.label_distribution = [0 for _ in range(self.num_classes)]
         self.collection_budget = 0
         self.training_budget = 0
