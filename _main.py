@@ -8,14 +8,15 @@ from tensorboardX import SummaryWriter
 from clients import *
 from server import Server
 import numpy as np
+import matplotlib.pyplot as plt
 
 def writing_function(writer, text, client, testData, step):
     loss, accuracy, F1, conf = client.test(testData)
     writer.add_scalar("Client_"+str(text)+'_test/loss', loss, step)
     writer.add_scalar("Client_"+str(text)+'_test/accuracy', accuracy, step)
     writer.add_scalar("Client_"+str(text)+'_test/F1', F1, step)
-    writer.add_scalars("Client_"+str(text)+'_test/conf', {"True Pos" : conf[0,0], "False Pos" : conf[0,1],
-                                         "False Neg" : conf[1,0], "True Neg" : conf[1,1]}, step)
+    fig = plt.figure(); plt.imshow(conf, cmap='gray', vmin=0, vmax=255)
+    writer.add_scalars("Client_"+str(text)+'_test/conf', fig, step)
     writer.add_scalar("Client_"+str(text)+'_train_loss', client.losses[-1], step)
     writer.add_scalar("Client_"+str(text)+'_battery_level', client.report_battery(), step)
 
@@ -110,8 +111,8 @@ def main(args):
         writer.add_scalar('Server/loss', loss, step)
         writer.add_scalar('Server/accuracy', accuracy, step)
         writer.add_scalar('Server/F1', F1, step)
-        writer.add_scalars('Server/conf', {"True Pos" : conf[0,0], "False Pos" : conf[0,1],
-                                             "False Neg" : conf[1,0], "True Neg" : conf[1,1]}, step)
+        fig = plt.figure(); plt.imshow(conf, cmap='gray', vmin=0, vmax=255)
+        writer.add_figure('Server/conf', fig, step)
         writer.add_histogram("Server/selected_clients", server.get_selected_clients())
 
         #         server.train_concurrent(group)
