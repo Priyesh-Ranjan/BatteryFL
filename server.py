@@ -103,11 +103,11 @@ class Server():
 
         if self.isSaveChanges:
             self.saveChanges(self.selected_clients)
-
+        print("----------------------------------------------------------------")
+        print("\n")
         tic = time.perf_counter()
         Delta = self.AR(self.selected_clients)                                      # Getting model weights from the clients
         toc = time.perf_counter()
-        print("----------------------------------------------------------------")
         print("\n")
         print(f"[Server] The aggregation takes {toc - tic:0.6f} seconds.\n")
         

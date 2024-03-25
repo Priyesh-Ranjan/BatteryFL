@@ -5,38 +5,23 @@ import pickle
 import torch
 import torch.nn as nn
 from torchvision import datasets, transforms
-import torchvision.models as models
-import pytorch_lightning as pl
-import torch.nn.functional as F
+#import torchvision.models as models
+from torchvision.models.resnet import resnet18
+#import pytorch_lightning as pl
+#import torch.nn.functional as F
 
 from dataloader import *
 
 
-class Net(pl.LightningModule):
-    def __init__(self, num_classes=15):
-        super(Net, self).__init__()
-        mobilenetv3 = models.mobilenet_v3_large(pretrained=True)
-        
-        self.features = mobilenetv3.features
-        
-        num_features = mobilenetv3.classifier[0].in_features
-        
-        self.classifier = nn.Sequential(
-            nn.Linear(num_features, 512),
-            nn.ReLU(inplace=True),
-            nn.Dropout(0.5),
-            nn.Linear(512, num_classes)
-        )
-        
-    def forward(self, x):
-        x = self.features(x)
-        x = F.adaptive_avg_pool2d(x, (1, 1))
-        x = torch.flatten(x, 1)
-        x = self.classifier(x)
-        return x
+def Net():
+    num_classes = 15
+    model = resnet18(pretrained=True)
+    n = model.fc.in_features
+    model.fc = nn.Linear(n, num_classes)
+    return model
 
 def getDataset():
-    dataset = datasets.ImageFolder('./data/insect/train',
+    dataset = datasets.ImageFolder(root='./data/insect/train',
                                train=True,
                                download=False,
                                transform = transforms.Compose([
@@ -82,7 +67,7 @@ def train_dataloader(num_clients, loader_type='iid', store=True, path='./data/lo
 
 def test_dataloader(test_batch_size):
     test_loader = torch.utils.data.DataLoader(
-        datasets.ImageFolder('./data/insect/test', train=False, transform = transforms.Compose([
+        datasets.ImageFolder(root='./data/insect/test', train=False, transform = transforms.Compose([
     transforms.Resize((224, 224)),
     transforms.RandomHorizontalFlip(),
     transforms.RandomRotation(10),

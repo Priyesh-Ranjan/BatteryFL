@@ -72,7 +72,7 @@ class Client():
         for buffer in self.model.buffers():
             buffer_size += buffer.nelement() * buffer.element_size()
         size = param_size+buffer_size    
-        self.upload = size*0
+        self.upload = size*np.float128(3.78*1e-17)
         self.download = self.upload/30
 
     def setModelParameter(self, states):
