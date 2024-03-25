@@ -318,7 +318,7 @@ class Client():
         count = 0
         c = 0
         f1 = 0
-        conf = np.zeros([10,10])
+        conf = np.zeros([self.num_classes,self.num_classes])
         data, target = [], []
         for batch_data, batch_target in testDataLoader:
             data.append(batch_data)
@@ -331,7 +331,7 @@ class Client():
         pred = output.argmax(dim=1, keepdim=True)  # get the index of the max log-probability
         correct = pred.eq(target.view_as(pred)).sum().item()
         count = pred.shape[0]
-        conf += confusion_matrix(target.cpu(),pred.cpu(), labels = [i for i in range(10)])
+        conf += confusion_matrix(target.cpu(),pred.cpu(), labels = [i for i in range(self.num_classes)])
         f1 = f1_score(target.cpu(), pred.cpu(), average = 'weighted')*count
         c = count
 

@@ -12,7 +12,7 @@ from utils import utils
 import time
 
 class Server():
-    def __init__(self, model, dataLoader, criterion=F.nll_loss, device='cpu', client_selection='ours'):
+    def __init__(self, model, dataLoader, criterion=F.nll_loss, device='cpu', client_selection='ours', num_classes = 10):
         self.clients = []                                                      # list of clients
         self.model = model
         self.dataLoader = dataLoader                                           # for server testing
@@ -28,6 +28,7 @@ class Server():
         self.criterion = criterion
         self.client_selection = client_selection
         self.selected_clients = []
+        self.num_classes = num_classes
 
     def init_stateChange(self):
         states = deepcopy(self.model.state_dict())
@@ -52,7 +53,7 @@ class Server():
         count = 0
         c = 0
         f1 = 0
-        conf = np.zeros([10,10])
+        conf = np.zeros([self.num_classes,self.num_classes])
         with torch.no_grad():
             data, target = [], []
             for batch_data, batch_target in self.dataLoader:
@@ -68,7 +69,7 @@ class Server():
                 pred = output.argmax(dim=1, keepdim=True)  # get the index of the max log-probability
             correct += pred.eq(target.view_as(pred)).sum().item()
             count += pred.shape[0]
-            conf += confusion_matrix(target.cpu(),pred.cpu(), labels = [i for i in range(10)])
+            conf += confusion_matrix(target.cpu(),pred.cpu(), labels = [i for i in range(self.num_classes)])
             f1 += f1_score(target.cpu(), pred.cpu(), average = 'weighted')*count
             c+=count
         test_loss /= count

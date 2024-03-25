@@ -11,13 +11,13 @@ import numpy as np
 
 def writing_function(writer, text, client, testData, step):
     loss, accuracy, F1, conf = client.test(testData)
-    writer.add_scalar("Client"+str(text)+'test/loss', loss, step)
-    writer.add_scalar("Client"+str(text)+'test/accuracy', accuracy, step)
-    writer.add_scalar("Client"+str(text)+'test/F1', F1, step)
-    writer.add_scalars("Client"+str(text)+'test/conf', {"True Pos" : conf[0,0], "False Pos" : conf[0,1],
+    writer.add_scalar("Client_"+str(text)+'_test/loss', loss, step)
+    writer.add_scalar("Client_"+str(text)+'_test/accuracy', accuracy, step)
+    writer.add_scalar("Client_"+str(text)+'_test/F1', F1, step)
+    writer.add_scalars("Client_"+str(text)+'_test/conf', {"True Pos" : conf[0,0], "False Pos" : conf[0,1],
                                          "False Neg" : conf[1,0], "True Neg" : conf[1,1]}, step)
-    writer.add_scalar("Client"+str(text)+'train_loss', client.losses[-1], step)
-    writer.add_scalar("Client"+str(text)+'battery_level', client.report_battery(), step)
+    writer.add_scalar("Client_"+str(text)+'_train_loss', client.losses[-1], step)
+    writer.add_scalar("Client_"+str(text)+'_battery_level', client.report_battery(), step)
 
 def main(args):
     print('#####################')
@@ -61,7 +61,7 @@ def main(args):
 
     # create server instance
     model0 = Net()
-    server = Server(model0, testData, criterion, device, args.client_selection)
+    server = Server(model = model0, dataLoader = testData, criterion = criterion, device = device, client_selection = args.client_selection, num_classes = num_classes)
     server.set_AR(args.AR)
     server.path_to_aggNet = args.path_to_aggNet
     if args.save_model_weights:
