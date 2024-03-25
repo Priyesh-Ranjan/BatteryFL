@@ -21,9 +21,7 @@ def Net():
     return model
 
 def getDataset():
-    dataset = datasets.ImageFolder(root='./data/insect/train/',
-                               train=True,
-                               download=False,
+    dataset = datasets.ImageFolder(root='./data/insect/train',
                                transform = transforms.Compose([
     transforms.Resize((224, 224)),
     transforms.RandomHorizontalFlip(),
@@ -67,7 +65,7 @@ def train_dataloader(num_clients, loader_type='iid', store=True, path='./data/lo
 
 def test_dataloader(test_batch_size):
     test_loader = torch.utils.data.DataLoader(
-        datasets.ImageFolder(root='./data/insect/test/', train=False, transform = transforms.Compose([
+        datasets.ImageFolder(root='./data/insect/test', transform = transforms.Compose([
     transforms.Resize((224, 224)),
     transforms.RandomHorizontalFlip(),
     transforms.RandomRotation(10),
