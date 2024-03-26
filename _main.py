@@ -33,7 +33,7 @@ def main(args):
 
     device = args.device
 
-    writer = SummaryWriter(f'./logs/{args.output_folder}/{args.experiment_name}')
+    writer = SummaryWriter(f'./logs/{args.experiment_name}')
 
     if args.dataset == 'mnist':
         from tasks import mnist
