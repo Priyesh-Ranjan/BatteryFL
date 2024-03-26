@@ -274,7 +274,7 @@ class Client():
         
     def collect_data(self):                                                                         # collects data
         loc = self.bottom_slice                             
-        print("Collecting data...(Check diversity function is too slow so it takes a lot of time)")
+        print("Collecting data...")
         start = self.top_slice
         mean_reputation = np.mean(self.reputation[:self.top_slice]) if self.top_slice > 0 else 0
         while True:     
