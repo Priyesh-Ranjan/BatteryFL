@@ -19,6 +19,7 @@ def client_writing_function(writer, text, client, testData, step):
     writer.add_figure("Client_"+str(text)+'/test_conf', fig, global_step = step)
     writer.add_scalar("Client_"+str(text)+'/train_loss', client.losses[-1], global_step = step)
     writer.add_scalar("Client_"+str(text)+'/battery_level', client.report_battery(), global_step = step)
+    writer.add_scalar("Client_"+str(text)+'/dataset_size', client.top_slice, global_step = step)
 
 def main(args):
     print('#####################')
