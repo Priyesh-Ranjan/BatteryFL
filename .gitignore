@@ -2,7 +2,6 @@
 .venv
 __pycache__/*
 utils/__pycache__/*
-data/*
 logs/*
 ```
 
