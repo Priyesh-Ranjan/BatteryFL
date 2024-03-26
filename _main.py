@@ -113,7 +113,8 @@ def main(args):
         writer.add_scalar('Server/F1', F1, global_step = step)
         fig = plt.figure(); plt.imshow(conf, cmap='gray', vmin=0, vmax=255)
         writer.add_figure('Server/conf', fig, global_step = step)
-        writer.add_scalars("Server/selected_clients", {"Selected_Clients": server.get_selected_clients()}, global_step = step)
+        clients = {"Client_"+client.cid : 1 if client in server.get_selected_clients() else 0 for client in clients_list}
+        writer.add_scalars("Server/selected_clients", clients, global_step = step)
 
         #         server.train_concurrent(group)
         for i, client in enumerate(clients_list) :
