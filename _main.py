@@ -52,14 +52,22 @@ def main(args):
         Net = cifar.Net
         criterion = F.cross_entropy
         num_classes = 10
-    elif args.dataset == 'agro':
-        from tasks import agro
-        trainData = agro.train_dataloader(args.num_clients, loader_type=args.loader_type, path=args.loader_path,
+    elif args.dataset == 'insect':
+        from tasks import insect
+        trainData = insect.train_dataloader(args.num_clients, loader_type=args.loader_type, path=args.loader_path,
                                           store=False)
-        testData = agro.test_dataloader(args.test_batch_size)
-        Net = agro.Net
+        testData = insect.test_dataloader(args.test_batch_size)
+        Net = insect.Net
         criterion = F.cross_entropy
         num_classes = 15
+    elif args.dataset == 'plant':
+        from tasks import plant
+        trainData = plant.train_dataloader(args.num_clients, loader_type=args.loader_type, path=args.loader_path,
+                                          store=False)
+        testData = plant.test_dataloader(args.test_batch_size)
+        Net = plant.Net
+        criterion = F.cross_entropy
+        num_classes = 38    
 
     # create server instance
     model0 = Net()
