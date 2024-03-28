@@ -83,7 +83,7 @@ def main(args):
     method = args.sample_selection
 
     clients_list = []
-    battery = 100
+    battery = args.starting_battery
     for i in range(args.num_clients):
         model = Net()
         if args.optimizer == 'SGD':
