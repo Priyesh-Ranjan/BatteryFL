@@ -124,8 +124,9 @@ def main(args):
         writer.add_figure('Server/conf', fig, global_step = step)
         clients = {"Client_"+str(client.cid) : 1 if client.cid in server.get_selected_clients() else 0 for client in clients_list}
         writer.add_scalars("Server/selected_clients", clients, global_step = step)
-        writer.add_scalar('Server/mu', server.mu, global_step = step)
-        writer.add_scalar('Server/var', server.var, global_step = step)
+        writer.add_scalar('Server/prob_loss', server.prob_loss, global_step = step)
+        writer.add_scalar('Server/prob_battery', server.prob_battery, global_step = step)
+        writer.add_scalar('Server/prob_dominated', server.prob_dominated, global_step = step)
 
         #         server.train_concurrent(group)
         for i, client in enumerate(clients_list) :

@@ -97,11 +97,28 @@ class Server():
             print("Selection Algorithm not recognized. Choosing all the clients")
             self.selected_clients = self.clients
         self.selected_clients = [c for c in self.selected_clients if c.battery > (c.upload + c.download)]           # Selecting clients with battery
+
+        
+
+        loss_val = np.array([p[0] for p in self.clients])
+        loss_val = np.array([v if v < 1e10 else np.mean(loss_val) for v in loss_val])
+        battery1 = np.array([p[1] for p in self.clients])
+        battery2 = np.array([p[2] for p in self.clients])
+        
+        mu_l, s_l = np.mean(loss_val), np.std(loss_val)
+        mu_b1, s_b1 = np.mean(battery1), np.std(battery1)
+        mu_b2, s_b2 = np.mean(battery2), np.std(battery2)
+
+        mu1, s1 = self.expected_loss(mu_l, s_l)
+        mu2, s2 = self.expected_battery(mu_b1, s_b1, mu_b2, s_b2)
+        #		P\left( \bigcap_{i=i}^2 \frac{f'_i(S)-f'_i(s)}{\sigma_i} \leq 0\right) \geq \prod_{i=1}^2 \left(1-\frac{\sigma_i^2}{\sigma_i^2+(f'_i(s)-\mu_0)^2}\right)
+        self.prob_loss = (1 - s1**2/(s1**2 + (mu1 - 0)**2)) 
+        self.prob_battery = (1-s2**2/(s2**2 + (mu2 - 0)**2))
+        self.prob_dominated = self.prob_loss*self.prob_battery
+
         print("Clients selected this round are:",[c.cid for c in self.selected_clients])
         if self.selected_clients == []:
             return False
-        
-        mu_1, var_1 = self.get_batteries()
         
         for c in self.selected_clients:
             c.setModelParameter(self.model.state_dict())                       # distribute server model to clients
@@ -121,10 +138,6 @@ class Server():
             self.model.state_dict()[param] += Delta[param]
         self.iter += 1
         
-        mu_2, var_2 = self.get_batteries()
-        
-        self.mu_function(mu_1,mu_2,var_1,var_2)
-        self.var_function(mu_1,mu_2,var_1,var_2)
         
         return True
 
@@ -135,19 +148,27 @@ class Server():
         batteries = np.array(batteries)
         return np.mean(batteries), np.var(batteries)
     
-    def mu_function(self, mu_1, mu_2, var_1, var_2) :
-        self.mu = (len(self.selected_clients)*(mu_1+mu_2)**2 + 2*(var_1+var_2))/(2*(mu_1**2+mu_2**2)+4)
-        
-    def var_function(self, mu_1, mu_2, var_1, var_2) :
-        var_sum = var_1 + var_2
-        mu_sum = mu_1 + mu_2
-        mu_sum_sq = mu_1**2 + mu_2**2
-        
-        part_1 = (2/(len(self.selected_clients)*(var_sum + mu_sum**2)))**2/(len(self.selected_clients)/2*(mu_sum_sq + 2))**2
-        
-        part_2 = ((len(self.selected_clients)/2*(var_sum + mu_sum**2))**2 *len(self.selected_clients)*(2 + mu_sum_sq))/(len(self.selected_clients)/2*(mu_sum_sq + 2))**4
+    def expected_loss(self, mu, s) :
+        # \sigma_2$ of $\frac{1}{8}+\frac{\sigma_l^4 + \mu_l^2 }{4\mu_l^2|\mathcal{C}|}
+        s2 = 1/8 + (s**4 + mu**2)/(4*mu**2*len(self.selected_clients))
+        return 0.5, s2
 
-        self.var = part_1 + part_2
+    def expected_battery(self, mu1, s1, mu2, s2) :
+        #E(X) = \frac{|\mathcal{c}|}{2}(\sigma_{b1}^2 + \sigma_{b2}^2) + \left(\frac{|\mathcal{c}|}{2}(\mu_{b1} + \mu_{b2})\right)^2 
+        #E(Y) = \frac{|\mathcal{C}|}{2}(\mu_{b1}^2 + \mu_{b2}^2 +2)
+        E_x = len(self.selected_clients)/2*(s1**2 + s2**2) + (len(self.selected_clients)/2*(mu1 + mu2))**2
+        E_y = len(self.selected_clients)/2*(mu1**2 + mu2**2 + 2)
+        
+        #var(X) <= \left(\frac{2}{|\mathcal{C}|((\sigma_{b1}^2 + \sigma_{b2}^2) + (\mu_{b1} + \mu_{b2})^2}\right)^2
+        #var(Y) = |\mathcal{C}|(2+\mu_{b1}^2 + \mu_{b2}^2)
+        V_x = (2/(len(self.selected_clients)*((s1**2 + s2**2) + (mu1 + mu2)**2)))**2
+        V_y = len(self.selected_clients)*(2 + mu1**2 + mu2**2)
+
+        # mu1 =  \frac{\mathbb{E}(X)}{\mathbb{E}(Y)} + \frac{\mathbb{E}(X) }{\mathbb{E}(Y)^3}\text{var}(Y)
+        mu1 = E_x/E_y + E_x/(E_y**3)*V_y
+        # s1 = 	\frac{\text{var}(X)}{\mathbb{E}(Y)^2} + \frac{\mathbb{E}(X)^2 }{\mathbb{E}(Y)^4}\text{var}(Y)
+        s1 = V_x/(E_y**2) + E_x**2/(E_y**4)*V_y
+        return mu1, s1
 
     def saveChanges(self, clients):                                            # To save the model as PCA
 

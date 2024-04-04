@@ -12,6 +12,8 @@ from torchvision.models.resnet import resnet18
 
 from dataloader import *
 
+IMG_SIZE = (128, 128)
+
 
 def Net():
     num_classes = 38
@@ -23,7 +25,7 @@ def Net():
 def getDataset():
     dataset = datasets.ImageFolder(root='./data/plant/train',
                                transform = transforms.Compose([
-    transforms.Resize((224, 224)),
+    transforms.Resize((IMG_SIZE)),
     transforms.RandomHorizontalFlip(),
     transforms.RandomRotation(10),
     transforms.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.2),
@@ -66,7 +68,7 @@ def train_dataloader(num_clients, loader_type='iid', store=True, path='./data/lo
 def test_dataloader(test_batch_size):
     test_loader = torch.utils.data.DataLoader(
         datasets.ImageFolder(root='./data/plant/test', transform = transforms.Compose([
-    transforms.Resize((224, 224)),
+    transforms.Resize((IMG_SIZE)),
     transforms.RandomHorizontalFlip(),
     transforms.RandomRotation(10),
     transforms.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.2),

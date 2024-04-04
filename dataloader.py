@@ -53,7 +53,7 @@ class customDataLoader():
         assert rank < self.size, 'partition index should be smaller than the size of the partition'
         partition = Partition(self.dataset, self.partition_list[rank])
         partition.classes = self.classes
-        train_set = torch.utils.data.DataLoader(partition, batch_size=int(self.bsz), shuffle=True,
+        train_set = torch.utils.data.DataLoader(partition, batch_size=int(self.bsz), shuffle=True, num_workers=4,
                                                 drop_last=True)  # drop last since some network requires batchnorm
         return train_set
 
