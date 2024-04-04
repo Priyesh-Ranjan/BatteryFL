@@ -29,6 +29,8 @@ class Server():
         self.client_selection = client_selection
         self.selected_clients = []
         self.num_classes = num_classes
+        self.mu = 0
+        self.var = 0
 
     def init_stateChange(self):
         states = deepcopy(self.model.state_dict())
@@ -79,7 +81,7 @@ class Server():
             '[Server] Test set: Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%), F1 Score: {:.4f}\n'.format(test_loss, correct, count, accuracy, f1/c))
         #print("F1 Score: {:.4f} \n".format(f1/c))    
         print("Confusion Matrix :")
-        print(conf.astype(int),"\n")    
+        print(conf.astype(int),"\n") 
         return test_loss, accuracy, f1/c, conf.astype(int)
 
     def do(self):                                                              # One round of communication, client training is asynchronous
@@ -98,6 +100,9 @@ class Server():
         print("Clients selected this round are:",[c.cid for c in self.selected_clients])
         if self.selected_clients == []:
             return False
+        
+        mu_1, var_1 = self.get_batteries()
+        
         for c in self.selected_clients:
             c.setModelParameter(self.model.state_dict())                       # distribute server model to clients
             c.perform_task()                                                   # selected clients will perform the FSM
@@ -115,7 +120,34 @@ class Server():
         for param in self.model.state_dict():
             self.model.state_dict()[param] += Delta[param]
         self.iter += 1
+        
+        mu_2, var_2 = self.get_batteries()
+        
+        self.mu_function(mu_1,mu_2,var_1,var_2)
+        self.var_function(mu_1,mu_2,var_1,var_2)
+        
         return True
+
+    def get_batteries(self) :
+        batteries = []
+        for c in self.selected_clients:
+            batteries.append(c.report_battery())
+        batteries = np.array(batteries)
+        return np.mean(batteries), np.var(batteries)
+    
+    def mu_function(self, mu_1, mu_2, var_1, var_2) :
+        self.mu = (len(self.selected_clients)*(mu_1+mu_2)**2 + 2*(var_1+var_2))/(2*(mu_1**2+mu_2**2)+4)
+        
+    def var_function(self, mu_1, mu_2, var_1, var_2) :
+        var_sum = var_1 + var_2
+        mu_sum = mu_1 + mu_2
+        mu_sum_sq = mu_1**2 + mu_2**2
+        
+        part_1 = (2/(len(self.selected_clients)*(var_sum + mu_sum**2)))**2/(len(self.selected_clients)/2*(mu_sum_sq + 2))**2
+        
+        part_2 = ((len(self.selected_clients)/2*(var_sum + mu_sum**2))**2 *len(self.selected_clients)*(2 + mu_sum_sq))/(len(self.selected_clients)/2*(mu_sum_sq + 2))**4
+
+        self.var = part_1 + part_2
 
     def saveChanges(self, clients):                                            # To save the model as PCA
 
