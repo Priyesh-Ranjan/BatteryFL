@@ -271,6 +271,7 @@ class Client():
             if flag : # if budget exceeded or converged, break
                 print("Early stopping training")
                 break
+        self.dataset = None
         
     def collect_data(self):                                                                         # collects data
         loc = self.bottom_slice                             
@@ -320,20 +321,16 @@ class Client():
         f1 = 0
         conf = np.zeros([self.num_classes,self.num_classes])
         data, target = [], []
-        for batch_data, batch_target in testDataLoader:
-            data.append(batch_data)
-            target.append(batch_target)
-        data = torch.cat(data, dim=0)
-        target = torch.cat(target, dim=0)
-        data, target = data.to(self.device), target.to(self.device)
-        output = self.model(data)
-        test_loss = self.criterion(output, target, reduction='sum').item()  # sum up batch loss
-        pred = output.argmax(dim=1, keepdim=True)  # get the index of the max log-probability
-        correct = pred.eq(target.view_as(pred)).sum().item()
-        count = pred.shape[0]
-        conf += confusion_matrix(target.cpu(),pred.cpu(), labels = [i for i in range(self.num_classes)])
-        f1 = f1_score(target.cpu(), pred.cpu(), average = 'weighted')*count
-        c = count
+        for data, target in testDataLoader:
+            data, target = data.to(self.device), target.to(self.device)
+            output = self.model(data)
+            test_loss += self.criterion(output, target, reduction='sum').item()  # sum up batch loss
+            pred += output.argmax(dim=1, keepdim=True)  # get the index of the max log-probability
+            correct += pred.eq(target.view_as(pred)).sum().item()
+            count += pred.shape[0]
+            conf += confusion_matrix(target.cpu(),pred.cpu(), labels = [i for i in range(self.num_classes)])
+            f1 += f1_score(target.cpu(), pred.cpu(), average = 'weighted')*count
+            c += count
 
         test_loss /= len(testDataLoader.dataset)
         accuracy = 100. * correct / count
