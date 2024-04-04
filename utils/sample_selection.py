@@ -31,7 +31,7 @@ def Loss(model, dataset, device, optimizer, criterion):
     #assert not np.isnan(np.sum(I_vals)).any() , "Influence values contain NaNs"
 
     # Optionally, move model back to CPU if not using it on GPU afterwards
-    # model.cpu()
+    model.cpu()
     return I_vals, np.mean(np.array(loss_all))
 
 

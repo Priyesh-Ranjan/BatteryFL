@@ -100,10 +100,11 @@ class Server():
 
         
 
-        loss_val = np.array([p[0] for p in self.clients])
+        participations = [c.participation() for c in self.clients]
+        loss_val = np.array([p[0] for p in participations])
         loss_val = np.array([v if v < 1e10 else np.mean(loss_val) for v in loss_val])
-        battery1 = np.array([p[1] for p in self.clients])
-        battery2 = np.array([p[2] for p in self.clients])
+        battery1 = np.array([p[1] for p in participations])
+        battery2 = np.array([p[2] for p in participations])
         
         mu_l, s_l = np.mean(loss_val), np.std(loss_val)
         mu_b1, s_b1 = np.mean(battery1), np.std(battery1)
