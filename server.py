@@ -102,9 +102,9 @@ class Server():
         battery1 = np.array([p[1] for p in participations])
         battery2 = np.array([p[2] for p in participations])
         
-        mu_l, s_l = np.mean(loss_val), np.std(loss_val)
-        mu_b1, s_b1 = np.mean(battery1), np.std(battery1)
-        mu_b2, s_b2 = np.mean(battery2), np.std(battery2)
+        mu_l, s_l = np.mean(loss_val), np.std(loss_val)+1e-9
+        mu_b1, s_b1 = np.mean(battery1), np.std(battery1)+1e-9
+        mu_b2, s_b2 = np.mean(battery2), np.std(battery2)+1e-9
 
         mu1, s1 = self.expected_loss(mu_l, s_l)
         mu2, s2 = self.expected_battery(mu_b1, s_b1, mu_b2, s_b2)

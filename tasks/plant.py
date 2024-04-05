@@ -6,7 +6,7 @@ import torch
 import torch.nn as nn
 from torchvision import datasets, transforms
 #import torchvision.models as models
-from torchvision.models.resnet import resnet18
+from torchvision.models import vgg16
 #import pytorch_lightning as pl
 #import torch.nn.functional as F
 
@@ -17,9 +17,9 @@ IMG_SIZE = (128, 128)
 
 def Net():
     num_classes = 38
-    model = resnet18(pretrained=True)
-    n = model.fc.in_features
-    model.fc = nn.Linear(n, num_classes)
+    model = vgg16(pretrained=True)
+    n = model.classifier[0].in_features
+    model.classifier = nn.Linear(n, num_classes)
     return model
 
 def getDataset():
