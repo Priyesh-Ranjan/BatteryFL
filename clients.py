@@ -325,8 +325,8 @@ class Client():
         conf = np.zeros([self.num_classes,self.num_classes])
         with torch.no_grad():
             for data, target in self.dataLoader:
-                data, target = data.to(self.device), target.to(self.device)
-                output = self.model(data)
+                target = target.to(self.device)
+                output = self.model(data.to(self.device))
                 test_loss += self.criterion(output, target, reduction='sum').item()  # sum up batch loss
                 if output.dim() == 1:
                     pred = torch.round(torch.sigmoid(output))

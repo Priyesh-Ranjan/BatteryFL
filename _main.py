@@ -111,6 +111,7 @@ def main(args):
     #        writing_function(writer, "client"+str(i)+'test', loss, accuracy, F1, conf, steps)
 
     while True:
+        torch.cuda.empty_cache()        
         step += 1
 
         print('\n\n########EPOCH %d ########' % step)
