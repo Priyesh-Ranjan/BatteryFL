@@ -252,6 +252,7 @@ class Client():
                 # For FedNova
                 local_counter = local_counter * self.momentum + 1
                 self.local_normalizing_vec += local_counter
+                del data, target, output, loss
 
             self.isTrained = True
             self.model.cpu()  ## avoid occupying gpu when idle
