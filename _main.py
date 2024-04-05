@@ -11,13 +11,14 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 def client_writing_function(writer, text, client, testData, step):
-    loss, accuracy, F1, conf = client.test(testData)
-    writer.add_scalar("Client_"+str(text)+'/test_loss', loss, global_step = step)
-    writer.add_scalar("Client_"+str(text)+'/test_accuracy', accuracy, global_step = step)
-    writer.add_scalar("Client_"+str(text)+'/test_F1', F1, global_step = step)
-    fig = plt.figure(); plt.imshow(conf, cmap='gray', vmin=0, vmax=255)
-    writer.add_figure("Client_"+str(text)+'/test_conf', fig, global_step = step)
-    writer.add_scalar("Client_"+str(text)+'/train_loss', client.losses[-1], global_step = step)
+    #loss, accuracy, F1, conf = client.test(testData)
+    #writer.add_scalar("Client_"+str(text)+'/test_loss', loss, global_step = step)
+    #writer.add_scalar("Client_"+str(text)+'/test_accuracy', accuracy, global_step = step)
+    #writer.add_scalar("Client_"+str(text)+'/test_F1', F1, global_step = step)
+    #fig = plt.figure(); plt.imshow(conf, cmap='gray', vmin=0, vmax=255)
+    #writer.add_figure("Client_"+str(text)+'/test_conf', fig, global_step = step)
+    if len(client.losses) > 0:
+        writer.add_scalar("Client_"+str(text)+'/train_loss', client.losses[-1], global_step = step)
     writer.add_scalar("Client_"+str(text)+'/battery_level', client.report_battery(), global_step = step)
     writer.add_scalar("Client_"+str(text)+'/dataset_size', client.top_slice, global_step = step)
 

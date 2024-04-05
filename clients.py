@@ -179,7 +179,10 @@ class Client():
                 #assert not np.isnan(r).any() , "Reputation has nan values"
                 req = max(0, -(self.bottom_slice//-num_classes))                                                     # here the required is just the whole thing
                 if len(idx) :
-                    samples = np.random.choice(idx, req, p = np.exp(r/self.gamma)/np.sum(np.exp(r/self.gamma)))      # same process
+                    #replace nan with 0
+                    p = np.exp(r/self.gamma)/np.sum(np.exp(r/self.gamma))
+                    p[np.isnan(p)] = min(p[~np.isnan(p)])
+                    samples = np.random.choice(idx, req, p = p)
                     indices.extend(samples)           
         print("From the previous collection", len(indices), "samples are selected for training")    
         return indices

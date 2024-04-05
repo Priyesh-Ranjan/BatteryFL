@@ -147,19 +147,19 @@ class Server():
     
     def expected_loss(self, mu, s) :
         # \sigma_2$ of $\frac{1}{8}+\frac{\sigma_l^4 + \mu_l^2 }{4\mu_l^2|\mathcal{C}|}
-        s2 = 1/8 + (s**4 + mu**2)/(4*mu**2*len(self.selected_clients))
+        s2 = 1/8 + (s**4 + mu**2)/(4*mu**2*len(self.clients))
         return 0.5, s2
 
     def expected_battery(self, mu1, s1, mu2, s2) :
         #E(X) = \frac{|\mathcal{c}|}{2}(\sigma_{b1}^2 + \sigma_{b2}^2) + \left(\frac{|\mathcal{c}|}{2}(\mu_{b1} + \mu_{b2})\right)^2 
         #E(Y) = \frac{|\mathcal{C}|}{2}(\mu_{b1}^2 + \mu_{b2}^2 +2)
-        E_x = len(self.selected_clients)/2*(s1**2 + s2**2) + (len(self.selected_clients)/2*(mu1 + mu2))**2
-        E_y = len(self.selected_clients)/2*(mu1**2 + mu2**2 + 2)
+        E_x = len(self.clients)/2*(s1**2 + s2**2) + (len(self.clients)/2*(mu1 + mu2))**2
+        E_y = len(self.clients)/2*(mu1**2 + mu2**2 + 2)
         
         #var(X) <= \left(\frac{2}{|\mathcal{C}|((\sigma_{b1}^2 + \sigma_{b2}^2) + (\mu_{b1} + \mu_{b2})^2}\right)^2
         #var(Y) = |\mathcal{C}|(2+\mu_{b1}^2 + \mu_{b2}^2)
-        V_x = (2/(len(self.selected_clients)*((s1**2 + s2**2) + (mu1 + mu2)**2)))**2
-        V_y = len(self.selected_clients)*(2 + mu1**2 + mu2**2)
+        V_x = (2/(len(self.clients)*((s1**2 + s2**2) + (mu1 + mu2)**2)))**2
+        V_y = len(self.clients)*(2 + mu1**2 + mu2**2)
 
         # mu1 =  \frac{\mathbb{E}(X)}{\mathbb{E}(Y)} + \frac{\mathbb{E}(X) }{\mathbb{E}(Y)^3}\text{var}(Y)
         mu1 = E_x/E_y + E_x/(E_y**3)*V_y
