@@ -66,7 +66,7 @@ wrapt                    1.16.0
 cd EIFFEL/
 
 ```
-!python main.py --num_clients 10 --optimizer Adam --lr 0.01 --momentum 0.5 --AR fednova --dataset plant --loader_type dirichlet --experiment_name "Battery" --client_selection ours --device cuda --batch_size 64 --test_batch_size 2048 --collection_size 400 --collection_battery_ratio 1 --alpha 0.25 --beta 0.25 --gamma 1 --mu 0.5 --training_size 500 --entropy_threshold 0.5 --collection_success_chance 0.95 --sample_selection loss --round_budget 10 --starting_battery 1
+!python main.py --num_clients 10 --optimizer Adam --lr 0.01 --momentum 0.5 --AR fednova --dataset mnist --loader_type dirichlet --experiment_name "Battery" --client_selection ours --device cuda --batch_size 64 --test_batch_size 2048 --collection_size 400 --collection_battery_ratio 1 --alpha 0.25 --beta 0.25 --gamma 1 --mu 0.5 --training_size 500 --entropy_threshold 0.5 --collection_success_chance 0.95 --sample_selection loss --round_budget 10 --starting_battery 1
 
-!python main.py --num_clients 10 --optimizer Adam --lr 0.1 --momentum 0.9 --AR fednova --dataset mnist --loader_type dirichlet --experiment_name "Battery" --client_selection ours --device cuda --batch_size 64 --test_batch_size 2048 --collection_size 400 --collection_battery_ratio 1 --alpha 0.25 --beta 0.25 --gamma 1 --mu 0.5 --training_size 500 --entropy_threshold 0.5 --collection_success_chance 0.95 --sample_selection loss --round_budget 10 --starting_battery 1
+!python main.py --num_clients 10 --optimizer SGD --lr 0.001 --momentum 0.0 --AR fednova --dataset plant --loader_type dirichlet --experiment_name "Battery" --client_selection ours --device cuda --batch_size 64 --test_batch_size 2048 --collection_size 400 --collection_battery_ratio 1 --alpha 0.25 --beta 0.25 --gamma 1 --mu 0.5 --training_size 500 --entropy_threshold 0.5 --collection_success_chance 0.95 --sample_selection loss --round_budget 10 --starting_battery 2
 ```
