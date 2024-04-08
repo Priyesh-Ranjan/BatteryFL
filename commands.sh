@@ -28,9 +28,29 @@
 !python main.py --num_clients 10 --optimizer SGD --lr 0.001 --momentum 0.0 --AR fednova --dataset plant --loader_type dirichlet --experiment_name "Battery_Method=TracIn" --client_selection ours --device cuda --batch_size 64 --test_batch_size 512 --collection_size previous_max --collection_battery_ratio 1 --alpha 0.25 --beta 0.25 --gamma 1 --mu 0.5 --training_size 500 --entropy_threshold 0.5 --collection_success_chance 0.95 --sample_selection tracin --round_budget 10 --starting_battery 2
 
 
-# ...
+# Maybe we can try doing the different collection success chance from 0.5 to 1
 
+!python main.py --num_clients 10 --optimizer SGD --lr 0.001 --momentum 0.0 --AR fednova --dataset plant --loader_type dirichlet --experiment_name "Battery_Collection_chance=0.5" --client_selection ours --device cuda --batch_size 64 --test_batch_size 512 --collection_size previous_max --collection_battery_ratio 1 --alpha 0.25 --beta 0.25 --gamma 1 --mu 0.5 --training_size 500 --entropy_threshold 0.5 --collection_success_chance 0.5 --sample_selection loss --round_budget 10 --starting_battery 2
 
+!python main.py --num_clients 10 --optimizer SGD --lr 0.001 --momentum 0.0 --AR fednova --dataset plant --loader_type dirichlet --experiment_name "Battery_Collection_chance=0.55" --client_selection ours --device cuda --batch_size 64 --test_batch_size 512 --collection_size previous_max --collection_battery_ratio 1 --alpha 0.25 --beta 0.25 --gamma 1 --mu 0.5 --training_size 500 --entropy_threshold 0.5 --collection_success_chance 0.55 --sample_selection loss --round_budget 10 --starting_battery 2
+
+!python main.py --num_clients 10 --optimizer SGD --lr 0.001 --momentum 0.0 --AR fednova --dataset plant --loader_type dirichlet --experiment_name "Battery_Collection_chance=0.6" --client_selection ours --device cuda --batch_size 64 --test_batch_size 512 --collection_size previous_max --collection_battery_ratio 1 --alpha 0.25 --beta 0.25 --gamma 1 --mu 0.5 --training_size 500 --entropy_threshold 0.5 --collection_success_chance 0.6 --sample_selection loss --round_budget 10 --starting_battery 2
+
+!python main.py --num_clients 10 --optimizer SGD --lr 0.001 --momentum 0.0 --AR fednova --dataset plant --loader_type dirichlet --experiment_name "Battery_Collection_chance=0.65" --client_selection ours --device cuda --batch_size 64 --test_batch_size 512 --collection_size previous_max --collection_battery_ratio 1 --alpha 0.25 --beta 0.25 --gamma 1 --mu 0.5 --training_size 500 --entropy_threshold 0.5 --collection_success_chance 0.65 --sample_selection loss --round_budget 10 --starting_battery 2
+
+!python main.py --num_clients 10 --optimizer SGD --lr 0.001 --momentum 0.0 --AR fednova --dataset plant --loader_type dirichlet --experiment_name "Battery_Collection_chance=0.7" --client_selection ours --device cuda --batch_size 64 --test_batch_size 512 --collection_size previous_max --collection_battery_ratio 1 --alpha 0.25 --beta 0.25 --gamma 1 --mu 0.5 --training_size 500 --entropy_threshold 0.5 --collection_success_chance 0.7 --sample_selection loss --round_budget 10 --starting_battery 2
+
+!python main.py --num_clients 10 --optimizer SGD --lr 0.001 --momentum 0.0 --AR fednova --dataset plant --loader_type dirichlet --experiment_name "Battery_Collection_chance=0.75" --client_selection ours --device cuda --batch_size 64 --test_batch_size 512 --collection_size previous_max --collection_battery_ratio 1 --alpha 0.25 --beta 0.25 --gamma 1 --mu 0.5 --training_size 500 --entropy_threshold 0.5 --collection_success_chance 0.75 --sample_selection loss --round_budget 10 --starting_battery 2
+
+!python main.py --num_clients 10 --optimizer SGD --lr 0.001 --momentum 0.0 --AR fednova --dataset plant --loader_type dirichlet --experiment_name "Battery_Collection_chance=0.8" --client_selection ours --device cuda --batch_size 64 --test_batch_size 512 --collection_size previous_max --collection_battery_ratio 1 --alpha 0.25 --beta 0.25 --gamma 1 --mu 0.5 --training_size 500 --entropy_threshold 0.5 --collection_success_chance 0.8 --sample_selection loss --round_budget 10 --starting_battery 2
+
+!python main.py --num_clients 10 --optimizer SGD --lr 0.001 --momentum 0.0 --AR fednova --dataset plant --loader_type dirichlet --experiment_name "Battery_Collection_chance=0.85" --client_selection ours --device cuda --batch_size 64 --test_batch_size 512 --collection_size previous_max --collection_battery_ratio 1 --alpha 0.25 --beta 0.25 --gamma 1 --mu 0.5 --training_size 500 --entropy_threshold 0.5 --collection_success_chance 0.85 --sample_selection loss --round_budget 10 --starting_battery 2
+
+!python main.py --num_clients 10 --optimizer SGD --lr 0.001 --momentum 0.0 --AR fednova --dataset plant --loader_type dirichlet --experiment_name "Battery_Collection_chance=0.9" --client_selection ours --device cuda --batch_size 64 --test_batch_size 512 --collection_size previous_max --collection_battery_ratio 1 --alpha 0.25 --beta 0.25 --gamma 1 --mu 0.5 --training_size 500 --entropy_threshold 0.5 --collection_success_chance 0.9 --sample_selection loss --round_budget 10 --starting_battery 2
+
+!python main.py --num_clients 10 --optimizer SGD --lr 0.001 --momentum 0.0 --AR fednova --dataset plant --loader_type dirichlet --experiment_name "Battery_Collection_chance=0.95" --client_selection ours --device cuda --batch_size 64 --test_batch_size 512 --collection_size previous_max --collection_battery_ratio 1 --alpha 0.25 --beta 0.25 --gamma 1 --mu 0.5 --training_size 500 --entropy_threshold 0.5 --collection_success_chance 0.95 --sample_selection loss --round_budget 10 --starting_battery 2
+
+!python main.py --num_clients 10 --optimizer SGD --lr 0.001 --momentum 0.0 --AR fednova --dataset plant --loader_type dirichlet --experiment_name "Battery_Collection_chance=1" --client_selection ours --device cuda --batch_size 64 --test_batch_size 512 --collection_size previous_max --collection_battery_ratio 1 --alpha 0.25 --beta 0.25 --gamma 1 --mu 0.5 --training_size 500 --entropy_threshold 0.5 --collection_success_chance 1.0 --sample_selection loss --round_budget 10 --starting_battery 2
 # ...
 
 
