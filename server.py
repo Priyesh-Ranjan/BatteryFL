@@ -70,7 +70,8 @@ class Server():
                 conf += confusion_matrix(batch_target.cpu(),pred.cpu(), labels = [i for i in range(self.num_classes)])
                 f1 += f1_score(batch_target.cpu(), pred.cpu(), average = 'weighted')*count
                 c+=count
-                del batch_data, batch_target
+                del batch_data, batch_target, output
+                torch.cuda.empty_cache()        
         test_loss /= count
         accuracy = 100. * correct / count
         self.model.cpu()  ## avoid occupying gpu when idle

@@ -136,6 +136,7 @@ def main(args):
             #writing_function(writer, "client"+str(i)+'train', loss, accuracy, F1, conf, steps)
 
             #loss, accuracy, F1, conf = client.test(testData)
+            torch.cuda.empty_cache()        
             client_writing_function(writer, str(i), client, testData, step)
             
             print("Client", i, "now has", client.report_battery() ,"battery left \n")

@@ -225,7 +225,7 @@ class Client():
             training_indices = self.select_data(self.training_size)                                                   # training indices obtained from the budget
             self.dataset = Subset(self.dataLoader.dataset, list(training_indices))
             self.update_reputation(training_indices)                                                                              # updating reputation
-            loader = DataLoader(self.dataset, shuffle=True, batch_size=self.batch_size, drop_last=False)                # dataloader for the training
+            loader = DataLoader(self.dataset, shuffle=True, batch_size=self.batch_size, drop_last=False, num_workers=4)                # dataloader for the training
             self.model.to(self.device)
             self.model.train()
             ind = 0; 
@@ -253,6 +253,7 @@ class Client():
                 local_counter = local_counter * self.momentum + 1
                 self.local_normalizing_vec += local_counter
                 del data, target, output, loss
+                torch.cuda.empty_cache()        
 
             self.isTrained = True
             self.model.cpu()  ## avoid occupying gpu when idle
@@ -338,6 +339,8 @@ class Client():
                 conf += confusion_matrix(target.cpu(),pred.cpu(), labels = [i for i in range(self.num_classes)])
                 f1 += f1_score(target.cpu(), pred.cpu(), average = 'weighted')*count
                 c+=count
+                del data, target, output
+                torch.cuda.empty_cache()        
 
         test_loss /= len(testDataLoader.dataset)
         accuracy = 100. * correct / count

@@ -8,19 +8,22 @@ def Loss(model, dataset, device, optimizer, criterion):
     model.eval()
     loss_all = []
     criterion = F.CrossEntropyLoss(reduction='none')
-    loader = DataLoader(dataset, shuffle=False, batch_size=dataset.__len__())
-    for batch_index, (data, target) in enumerate(loader):
-        data, target = data.to(device), target.to(device)
-    
-    # Forward pass to get model output
-        output = model(data)
-    
-    # Calculate loss for each sample in the batch
-        loss_each = criterion(output, target)
-    
-    # Detach losses and move to CPU
-        loss_each_np = loss_each.detach().cpu().numpy()
-        loss_all.extend(loss_each_np)
+    loader = DataLoader(dataset, shuffle=False, batch_size=512, num_workers=4)
+    with torch.no_grad():
+        for batch_index, (data, target) in enumerate(loader):
+            data, target = data.to(device), target.to(device)
+        
+        # Forward pass to get model output
+            output = model(data)
+        
+        # Calculate loss for each sample in the batch
+            loss_each = criterion(output, target)
+        
+        # Detach losses and move to CPU
+            loss_each_np = loss_each.detach().cpu().numpy()
+            loss_all.extend(loss_each_np)
+            del data, target, output, loss_each
+            torch.cuda.empty_cache()
 
     # Calculate influence values outside the loop for efficiency
     total_loss = np.sum(loss_all)
@@ -52,6 +55,9 @@ def TracIn(model, dataset, device, optimizer, criterion):
             data_grad = data.grad.data
             tracin_score = torch.dot(data_grad.view(-1), data_grad.view(-1))
             tracin.extend(tracin_score)
+
+            del data, target
+            torch.cuda.empty_cache()
     total_trac = np.sum(tracin)
     #model.cpu()      
     if total_trac == 0:
