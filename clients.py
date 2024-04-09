@@ -43,9 +43,9 @@ class Client():
         self.upload = 0
         self.download = 0
         self.collection = 0
-        self.training = np.random.uniform(1.5,2)*np.random.uniform(5,15)/10**6
+        self.training = (np.random.uniform(1.5,2)**2)*np.random.uniform(5,15)/10**6
         self.threshold = entropy_threshold                                     # threshold for the entropy method
-        self.round_budget = round_budget                                       # Round budget in the beginning, remains same over the entire round
+        self.round_budget = round_budget*self.battery/100                      # Round budget in the beginning, remains same over the entire round
         self.training_size = training_size                                     # Size of training that will happen in a round, pre-defined based on dataset
         self.num_classes = num_classes
         self.label_distribution = [0 for _ in range(self.num_classes)]
@@ -148,6 +148,7 @@ class Client():
         #assert not np.isnan(self.reputation).any() , "Reputation has nan values after update"
 
     def select_older_data(self):                                                                             # Selecting older data
+        required_samples = max(0, self.training_size - (self.top_slice - self.bottom_slice))                 # required samples
         if self.bottom_slice != self.top_slice :
             """This if else is here because in some cases, data is not collected and only training happens
             in that case there is an error here. I am just making it so that the current round of data is not
@@ -160,7 +161,7 @@ class Client():
             for c,num in counts.items() :                                                                            # for every label
                 idx = np.asarray(comp==c).nonzero()[0]                                                               # indexes of comp where comp == the current class
                 r = self.reputation[idx]                                                                             # reputation of those samples
-                req = max(0, -(self.top_slice//-num_classes) - num)                                                  # required samples (looks weird because of ceiling fn)
+                req = max(0, (required_samples//num_classes) - num)                                                  # required samples (looks weird because of ceiling fn)
                 if len(idx) :                                                                                        # If those number of samples exist
                     samples = np.random.choice(idx, req, p = np.exp(r/self.gamma)/np.sum(np.exp(r/self.gamma)))      # then pick with the probability
                     indices.extend(samples)
@@ -177,7 +178,7 @@ class Client():
                 r = self.reputation[idx]
                 #no nan in r
                 #assert not np.isnan(r).any() , "Reputation has nan values"
-                req = max(0, -(self.bottom_slice//-num_classes))                                                     # here the required is just the whole thing
+                req = max(0, (required_samples//num_classes))                                                     # here the required is just the whole thing
                 if len(idx) :
                     #replace nan with 0
                     p = np.exp(r/self.gamma)/np.sum(np.exp(r/self.gamma))
@@ -209,7 +210,8 @@ class Client():
 
     def train(self):
         inner_epochs = int((self.round_budget-self.collection_budget - self.upload)/(self.training_size*self.training))            # How many rounds you can train on the given budget
-        print("Starting training \n")    
+        print("Starting training")    
+        print(f"{inner_epochs} rounds of training can be done \n")
         print("")
         flag = 0
         # if no data: skip
@@ -254,6 +256,7 @@ class Client():
                 self.local_normalizing_vec += local_counter
                 del data, target, output, loss
                 torch.cuda.empty_cache()        
+                self.bottom_slice = self.top_slice                                               # Bottom slice is updated for the next round of collection
 
             self.isTrained = True
             self.model.cpu()  ## avoid occupying gpu when idle
@@ -401,7 +404,6 @@ class Client():
         self.isTrained = False
         print("Client",self.cid,"sending model to the server \n")
         print("\n")
-        self.bottom_slice = self.top_slice                                               # Bottom slice is updated for the next round of collection
         self.battery -= (self.upload + self.training_budget + self.collection_budget)      # battery reduces by upload battery amount
 
     #         self.test(self.dataLoader)

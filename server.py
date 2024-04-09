@@ -99,11 +99,14 @@ class Server():
         
 
         participations = [c.participation() for c in self.clients]
-        loss_val = np.array([p[0] for p in participations])
         loss_val = np.array([v if v < 1e9 else np.mean(loss_val[loss_val < 1e9]) for v in loss_val])
-        battery1 = np.array([p[1] for p in participations])
-        battery2 = np.array([p[2] for p in participations])
+        battery1 = np.array([min(0,p[1]) for p in participations])
+        battery2 = np.array([min(0,p[2]) for p in participations])
+
+        f1 = client_selection.f1(battery1, battery2, [c.cid for c in self.selected_clients])
+        f2 = client_selection.f2(loss_val, [c.cid for c in self.selected_clients])
         
+        loss_val = np.array([p[0] for p in participations if p[2] > 0])
         mu_l, s_l = np.mean(loss_val), np.std(loss_val)+1e-9
         mu_b1, s_b1 = np.mean(battery1), np.std(battery1)+1e-9
         mu_b2, s_b2 = np.mean(battery2), np.std(battery2)+1e-9
@@ -111,8 +114,8 @@ class Server():
         mu1, s1 = self.expected_loss(mu_l, s_l)
         mu2, s2 = self.expected_battery(mu_b1, s_b1, mu_b2, s_b2)
         #		P\left( \bigcap_{i=i}^2 \frac{f'_i(S)-f'_i(s)}{\sigma_i} \leq 0\right) \geq \prod_{i=1}^2 \left(1-\frac{\sigma_i^2}{\sigma_i^2+(f'_i(s)-\mu_0)^2}\right)
-        self.prob_loss = (1 - s1**2/(s1**2 + (mu1 - 0)**2)) 
-        self.prob_battery = (1-s2**2/(s2**2 + (mu2 - 0)**2))
+        self.prob_loss    = (1-s1**2/(s1**2 + (mu1 - f1)**2)) 
+        self.prob_battery = (1-s2**2/(s2**2 + (mu2 - f2)**2))
         self.prob_dominated = self.prob_loss*self.prob_battery
 
         print("Clients selected this round are:",[c.cid for c in self.selected_clients])

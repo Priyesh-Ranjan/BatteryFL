@@ -51,7 +51,7 @@ def Our_Algorithm(clients):                                                  # S
         num_clients = len(clients)
         participations = [c.participation() for c in clients]
         loss_val = np.array([p[0] for p in participations])
-        loss_val = np.array([v if v < 1e10 else np.mean(loss_val[loss_val < 1e10]) for v in loss_val])
+        loss_val = np.array([v if v < 1e10 else np.max(loss_val[loss_val < 1e10]) for v in loss_val])
         battery1 = np.array([p[1] for p in participations])
         battery2 = np.array([p[2] for p in participations])
         S = []
