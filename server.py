@@ -99,14 +99,14 @@ class Server():
         
 
         participations = [c.participation() for c in self.clients]
-        loss_val = np.array([v if v < 1e9 else np.mean(loss_val[loss_val < 1e9]) for v in loss_val])
-        battery1 = np.array([min(0,p[1]) for p in participations])
-        battery2 = np.array([min(0,p[2]) for p in participations])
+        loss_val = np.array([p[0] if p[2]>0 else 0 for p in participations])
+        loss_val = np.array([v if v < 1e9 or np.all(v>=1e9) else np.mean(loss_val[loss_val < 1e9]) for v in loss_val])
+        battery1 = np.array([max(0,p[1]) for p in participations])
+        battery2 = np.array([max(0,p[2]) for p in participations])
 
         f1 = client_selection.f1(battery1, battery2, [c.cid for c in self.selected_clients])
         f2 = client_selection.f2(loss_val, [c.cid for c in self.selected_clients])
         
-        loss_val = np.array([p[0] for p in participations if p[2] > 0])
         mu_l, s_l = np.mean(loss_val), np.std(loss_val)+1e-9
         mu_b1, s_b1 = np.mean(battery1), np.std(battery1)+1e-9
         mu_b2, s_b2 = np.mean(battery2), np.std(battery2)+1e-9

@@ -50,8 +50,8 @@ def dominates(i, j, objectives):                                     # Check if 
 def Our_Algorithm(clients):                                                  # Select client function (Need to fix some errors)
         num_clients = len(clients)
         participations = [c.participation() for c in clients]
-        loss_val = np.array([p[0] for p in participations])
-        loss_val = np.array([v if v < 1e10 else np.max(loss_val[loss_val < 1e10]) for v in loss_val])
+        loss_val = np.array([p[0] if p[2]>0 else 0 for p in participations])
+        loss_val = np.array([v if v < 1e10 else np.mean(loss_val[loss_val < 1e10]) for v in loss_val])
         battery1 = np.array([p[1] for p in participations])
         battery2 = np.array([p[2] for p in participations])
         S = []
@@ -96,7 +96,7 @@ class BatteryLossOptimization(pymoo.core.problem.Problem):
         for row in x:
             S = [i for i in range(len(row)) if row[i]]
             participations = [c.participation() for c in self.clients]
-            loss_val = np.array([p[0] for p in participations])
+            loss_val = np.array([p[0] if p[2]>0 else 0 for p in participations])
             loss_val = np.array([v if v < 1e10 else np.mean(loss_val[loss_val < 1e10]) for v in loss_val])
             battery1 = np.array([p[1] for p in participations])
             battery2 = np.array([p[2] for p in participations])
@@ -133,7 +133,7 @@ def genetic(clients, algorithm="nsga2", generations=20, population_size=100, mut
 
 def eafl(clients, f=0.25, selected=5):
     participations = [c.participation() for c in clients]
-    loss_val = np.array([p[0] for p in participations])
+    loss_val = np.array([p[0] if p[2]>0 else 0 for p in participations])
     loss_val = np.array([v if v < 1e10 else np.mean(loss_val[loss_val < 1e10]) for v in loss_val])
     battery1 = np.array([p[1] for p in participations])
     
