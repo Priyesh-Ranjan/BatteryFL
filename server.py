@@ -91,6 +91,8 @@ class Server():
             self.selected_clients = client_selection.genetic(self.clients, algorithm="nsga2")
         elif self.client_selection == "EAFL" :
             self.selected_clients = client_selection.eafl(self.clients)
+        elif self.client_selection == "all" :
+            self.selected_clients = self.clients
         else :
             print("Selection Algorithm not recognized. Choosing all the clients")
             self.selected_clients = self.clients
@@ -107,9 +109,9 @@ class Server():
         f1 = client_selection.f1(battery1, battery2, [c.cid for c in self.selected_clients])
         f2 = client_selection.f2(loss_val, [c.cid for c in self.selected_clients])
         
-        mu_l, s_l = np.mean(loss_val), np.std(loss_val)+1e-9
-        mu_b1, s_b1 = np.mean(battery1), np.std(battery1)+1e-9
-        mu_b2, s_b2 = np.mean(battery2), np.std(battery2)+1e-9
+        mu_l, s_l = np.mean(loss_val), np.std(loss_val)+1e-4
+        mu_b1, s_b1 = np.mean(battery1), np.std(battery1)+1e-4
+        mu_b2, s_b2 = np.mean(battery2), np.std(battery2)+1e-4
 
         mu1, s1 = self.expected_loss(mu_l, s_l)
         mu2, s2 = self.expected_battery(mu_b1, s_b1, mu_b2, s_b2)

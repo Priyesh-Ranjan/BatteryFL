@@ -28,7 +28,7 @@ def f1(battery_current, battery_future, S):                          # Gives the
     
         numerator = (sum_battery_current_not_S + sum_battery_future_S) ** 2
         denominator = sum_battery_current_not_S_squared + sum_battery_future_S_squared
-        fitness_value = numerator / denominator / len(battery_current)
+        fitness_value = numerator / denominator / len(battery_current) if denominator != 0 else 1
     
         return fitness_value
     
@@ -36,7 +36,7 @@ def f2(loss_val, S):                                                     # Gives
         idx = np.array(S)
         if len(S) == 0:
             return 0
-        return np.sum(loss_val[S]) / np.sum(loss_val)
+        return np.sum(loss_val[S]) / np.sum(loss_val) if np.any(loss_val[idx]) else 1
 
 def dominates(i, j, objectives):                                     # Check if the first solution dominates the second
         for o in objectives:
@@ -51,9 +51,9 @@ def Our_Algorithm(clients):                                                  # S
         num_clients = len(clients)
         participations = [c.participation() for c in clients]
         loss_val = np.array([p[0] if p[2]>0 else 0 for p in participations])
-        loss_val = np.array([v if v < 1e10 else np.mean(loss_val[loss_val < 1e10]) for v in loss_val])
-        battery1 = np.array([p[1] for p in participations])
-        battery2 = np.array([p[2] for p in participations])
+        loss_val = np.array([v if v < 1e9 else np.mean(loss_val[loss_val < 1e9]) for v in loss_val])
+        battery1 = np.array([max(0,p[1]) for p in participations])
+        battery2 = np.array([max(0,p[2]) for p in participations])
         S = []
         while len(S) < len(clients):
             current_score = min(f2(loss_val, S), f1(battery1, battery2, S))

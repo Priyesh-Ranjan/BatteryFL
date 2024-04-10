@@ -33,7 +33,7 @@ def parse_args():
     parser.add_argument("--collection_success_chance", type=float, default = 0.95)
     #parser.add_argument("--training_battery", type=float, default = 0.002)
     parser.add_argument("--sample_selection", type=str, choices=["loss","tracin"],default = 'loss')
-    parser.add_argument("--client_selection", type=str, choices=["ours","NSGA","AGE","EAFL"],default='ours')
+    parser.add_argument("--client_selection", type=str, choices=["ours","NSGA","AGE","EAFL","all"],default='ours')
     parser.add_argument("--alpha", type=float, default = 0.5)
     parser.add_argument("--beta", type=float, default = 0.5)
     parser.add_argument("--gamma", type=float, default = 0.5)
