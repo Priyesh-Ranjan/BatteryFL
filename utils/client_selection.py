@@ -51,7 +51,7 @@ def Our_Algorithm(clients):                                                  # S
         num_clients = len(clients)
         participations = [c.participation() for c in clients]
         loss_val = np.array([p[0] if p[2]>0 else 0 for p in participations])
-        loss_val = np.array([v if v < 1e9 else np.mean(loss_val[loss_val < 1e9]) for v in loss_val])
+        #loss_val = np.array([v if v < 1e9 else np.mean(loss_val[loss_val < 1e9]) for v in loss_val])
         battery1 = np.array([max(0,p[1]) for p in participations])
         battery2 = np.array([max(0,p[2]) for p in participations])
         S = []
@@ -64,13 +64,9 @@ def Our_Algorithm(clients):                                                  # S
             if l==[] or max(F[l]) <= current_score:
                 break
             N = []
-            for c in range(num_clients):
-                if c in S: 
-                    continue
+            for c in l:
                 ND = True
-                for c_prime in range(num_clients):
-                    if c_prime in S + [c]: 
-                        continue
+                for c_prime in [ elem for elem in l if  elem != c]:
                     if dominates(c_prime, c, [F1, F2]):
                         ND = False
                         break
@@ -79,7 +75,7 @@ def Our_Algorithm(clients):                                                  # S
             max_index = np.argmax(F[N])
             S.append(N[max_index])
 
-        selected_clients = [clients[c] for c in S]   
+        selected_clients = [clients[c] for c in sorted(S)]   
         return selected_clients
 
 class BatteryLossOptimization(pymoo.core.problem.Problem):
@@ -97,7 +93,7 @@ class BatteryLossOptimization(pymoo.core.problem.Problem):
             S = [i for i in range(len(row)) if row[i]]
             participations = [c.participation() for c in self.clients]
             loss_val = np.array([p[0] if p[2]>0 else 0 for p in participations])
-            loss_val = np.array([v if v < 1e10 else np.mean(loss_val[loss_val < 1e10]) for v in loss_val])
+            #loss_val = np.array([v if v < 1e10 else np.mean(loss_val[loss_val < 1e10]) for v in loss_val])
             battery1 = np.array([p[1] for p in participations])
             battery2 = np.array([p[2] for p in participations])
             out_F.append([-f1(battery1, battery2, S), -f2(loss_val, S)])
@@ -126,18 +122,24 @@ def genetic(clients, algorithm="nsga2", generations=20, population_size=100, mut
                                     seed=1,
                                     verbose=False)
 
-    F = np.maximum(res.F[:,0], res.F[:,1])
+    res_F = res.F
+    res_X = res.X
+    res_F = np.array([ f for x, f in zip(res_X, res_F) if np.any(x)])
+    res_X = np.array([ x for x in res_X if np.any(x)])
+    if len(res_F) == 0:
+        return []
+    F = np.maximum(res_F[:,0], res_F[:,1])
     best_idx = np.argmax(F)
-    best_solution = res.X[best_idx]
-    return [clients[i] for i in range(len(clients)) if best_solution[i]]
+    best_solution = res_X[best_idx]
+    selected = [clients[i] for i in range(len(clients)) if best_solution[i]]
+    return selected
 
 def eafl(clients, f=0.25, selected=5):
     participations = [c.participation() for c in clients]
     loss_val = np.array([p[0] if p[2]>0 else 0 for p in participations])
-    loss_val = np.array([v if v < 1e10 else np.mean(loss_val[loss_val < 1e10]) for v in loss_val])
     battery1 = np.array([p[1] for p in participations])
     
     reward = (1-f)*(battery1) + f*loss_val
 
-    selected_clients = [clients[i] for i in np.argsort(reward)[:selected]]
+    selected_clients = [clients[i] for i in np.argsort(reward)[-selected:]]
     return selected_clients

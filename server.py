@@ -100,55 +100,55 @@ class Server():
 
         
 
-        participations = [c.participation() for c in self.clients]
-        loss_val = np.array([p[0] if p[2]>0 else 0 for p in participations])
-        loss_val = np.array([v if v < 1e9 or np.all(v>=1e9) else np.mean(loss_val[loss_val < 1e9]) for v in loss_val])
-        battery1 = np.array([max(0,p[1]) for p in participations])
-        battery2 = np.array([max(0,p[2]) for p in participations])
-
-        f1 = client_selection.f1(battery1, battery2, [c.cid for c in self.selected_clients])
-        f2 = client_selection.f2(loss_val, [c.cid for c in self.selected_clients])
-        
-        mu_l, s_l = np.mean(loss_val), np.std(loss_val)+1e-4
-        mu_b1, s_b1 = np.mean(battery1), np.std(battery1)+1e-4
-        mu_b2, s_b2 = np.mean(battery2), np.std(battery2)+1e-4
-
-        mu1, s1 = self.expected_loss(mu_l, s_l)
-        mu2, s2 = self.expected_battery(mu_b1, s_b1, mu_b2, s_b2)
-        #		P\left( \bigcap_{i=i}^2 \frac{f'_i(S)-f'_i(s)}{\sigma_i} \leq 0\right) \geq \prod_{i=1}^2 \left(1-\frac{\sigma_i^2}{\sigma_i^2+(f'_i(s)-\mu_0)^2}\right)
-        self.prob_loss    = (1-s1**2/(s1**2 + (mu1 - f1)**2)) 
-        self.prob_battery = (1-s2**2/(s2**2 + (mu2 - f2)**2))
-        #if inf then 1
-        if not np.isfinite(self.prob_loss):
-            self.prob_loss = 1
-        if not np.isfinite(self.prob_battery):
-            self.prob_battery = 1
-        self.prob_dominated = self.prob_loss*self.prob_battery
-
-        print("Clients selected this round are:",[c.cid for c in self.selected_clients])
-        if self.selected_clients == []:
+        if len(self.selected_clients) == 0:
             return False
-        
-        for c in self.selected_clients:
-            c.setModelParameter(self.model.state_dict())                       # distribute server model to clients
-            c.perform_task()                                                   # selected clients will perform the FSM
+        else:
+            participations = [c.participation() for c in self.clients]
+            loss_val = np.array([p[0] if p[2]>0 else 0 for p in participations])
+            loss_val = np.array([v if v < 1e9 or np.all(v>=1e9) else np.mean(loss_val[loss_val < 1e9]) for v in loss_val])
+            battery1 = np.array([max(0,p[1]) for p in participations])
+            battery2 = np.array([max(0,p[2]) for p in participations])
 
-        if self.isSaveChanges:
-            self.saveChanges(self.selected_clients)
-        print("----------------------------------------------------------------")
-        print("\n")
-        tic = time.perf_counter()
-        Delta = self.AR(self.selected_clients)                                      # Getting model weights from the clients
-        toc = time.perf_counter()
-        print("\n")
-        print(f"[Server] The aggregation takes {toc - tic:0.6f} seconds.\n")
-        
-        for param in self.model.state_dict():
-            self.model.state_dict()[param] += Delta[param]
-        self.iter += 1
-        
-        
-        return True
+            f1 = client_selection.f1(battery1, battery2, [c.cid for c in self.selected_clients])
+            f2 = client_selection.f2(loss_val, [c.cid for c in self.selected_clients])
+            
+            mu_l, s_l = np.mean(loss_val), np.std(loss_val)+1e-4
+            mu_b1, s_b1 = np.mean(battery1), np.std(battery1)+1e-4
+            mu_b2, s_b2 = np.mean(battery2), np.std(battery2)+1e-4
+
+            mu1, s1 = self.expected_loss(mu_l, s_l)
+            mu2, s2 = self.expected_battery(mu_b1, s_b1, mu_b2, s_b2)
+            #		P\left( \bigcap_{i=i}^2 \frac{f'_i(S)-f'_i(s)}{\sigma_i} \leq 0\right) \geq \prod_{i=1}^2 \left(1-\frac{\sigma_i^2}{\sigma_i^2+(f'_i(s)-\mu_0)^2}\right)
+            self.prob_loss    = (1-s1**2/(s1**2 + (mu1 - f1)**2)) 
+            self.prob_battery = (1-s2**2/(s2**2 + (mu2 - f2)**2))
+            #if inf then 1
+            if not np.isfinite(self.prob_loss):
+                self.prob_loss = 1
+            if not np.isfinite(self.prob_battery):
+                self.prob_battery = 1
+            self.prob_dominated = self.prob_loss*self.prob_battery
+
+            print("Clients selected this round are:",[c.cid for c in self.selected_clients])
+            for c in self.selected_clients:
+                c.setModelParameter(self.model.state_dict())                       # distribute server model to clients
+                c.perform_task()                                                   # selected clients will perform the FSM
+
+            if self.isSaveChanges:
+                self.saveChanges(self.selected_clients)
+            print("----------------------------------------------------------------")
+            print("\n")
+            tic = time.perf_counter()
+            Delta = self.AR(self.selected_clients)                                      # Getting model weights from the clients
+            toc = time.perf_counter()
+            print("\n")
+            print(f"[Server] The aggregation takes {toc - tic:0.6f} seconds.\n")
+            
+            for param in self.model.state_dict():
+                self.model.state_dict()[param] += Delta[param]
+            self.iter += 1
+            
+            
+            return True
 
     def get_batteries(self) :
         batteries = []
@@ -238,6 +238,11 @@ class Server():
     
     def FedNova(self, clients):
         from utils.fednova import Net
+        clients = [c for c in clients if c.data_size > 0 and c.local_normalizing_vec > 0]
+        if len(clients) == 0:
+            print("No clients with data size > 0 and local normalizing vector > 0")
+            #return all 0 delta
+            return self.emptyStates
         norm_vector = []
         data_ratio = []
         for c in clients:
@@ -257,9 +262,12 @@ class Server():
         deltas = [c.getDelta() for c in clients]
         vecs = [utils.net2vec(delta) for delta in deltas]
         vecs = [vec for vec in vecs if torch.isfinite(vec).all().item()]
-        result = func(torch.stack(vecs, 1).unsqueeze(0))
-        result = result.view(-1)
-        utils.vec2net(result, Delta)
+        try:
+            result = func(torch.stack(vecs, 1).unsqueeze(0))
+            result = result.view(-1)
+            utils.vec2net(result, Delta)
+        except:
+            Delta = deepcopy(self.emptyStates)
         return Delta
 
     def FedFuncWholeStateDict(self, clients, func):

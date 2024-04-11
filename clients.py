@@ -112,7 +112,8 @@ class Client():
         print("Clients collection budget is", self.collection_budget)
         print("Client total energy spent is", initial_battery - self.battery)
         if self.collection_budget + self.training_budget + self.upload > self.round_budget:
-            assert False, "Client {} has exceeded the round budget".format(self.cid)
+            pass
+            #assert False, "Client {} has exceeded the round budget".format(self.cid)
         if self.training_budget + self. collection_budget < self.training:
             self.battery = 0
 
@@ -186,7 +187,8 @@ class Client():
                 if len(idx) :
                     #replace nan with 0
                     p = np.exp(r/self.gamma)/np.sum(np.exp(r/self.gamma))
-                    p[np.isnan(p)] = min(p[~np.isnan(p)])
+                    p[np.isnan(p)] = min(p[~np.isnan(p)]) if len(p[~np.isnan(p)]) > 0 else 1
+                    p = p/np.sum(p)
                     samples = np.random.choice(idx, req, p = p)
                     indices.extend(samples)           
         print("From the previous collection", len(indices), "samples are selected for training")    
@@ -235,10 +237,12 @@ class Client():
             self.model.to(self.device)
             self.model.train()
             ind = 0; 
+            self.data_size = len(training_indices)
             for batch_index, (data, target) in enumerate(loader):
                 # if budget exceeded
                 if self.training_budget + (self.batch_size)*self.training +self.upload +self.collection_budget> min(self.round_budget, self.battery): 
                     flag = 1                                                                                          
+                    print("Early stopping training: out of battery (This should never happen)")
                     break
                 data = data.to(self.device)                                                                       # From here......
                 target = target.to(self.device)
@@ -258,19 +262,13 @@ class Client():
                 torch.cuda.empty_cache()        
                 self.bottom_slice = self.top_slice                                               # Bottom slice is updated for the next round of collection
 
-            if self.check_convergence():                # model is converged
-                #[AA] if the new data has been used for training at least once, then we can break out of the loop
-                #otherwise, we need to continue training on the new data
-                flag = 1                                                                                          # need to break out of everything
-                break
             self.isTrained = True
             #TODO [AA] : this sometimes reports less samples
             # I fixed it
             print("Client trained on",ind,"samples.")
             print(" Used around",self.training_budget,"battery")
-            print("Average loss on the data = ", self.losses[-1],"                           (It is infinite if the data trained on is less than batch_size)\n")
+            print("Average loss on the data = ", self.losses[-1],"\n")
             total_indices = np.array(range(self.top_slice))                                                           # all the samples that we have right now
-            self.data_size = len(training_indices)
 
             #select all the values that are not in the training indices
             #assert not np.isnan(self.reputation).any() , "Reputation has nan values before pardoning"
@@ -279,6 +277,12 @@ class Client():
             self.reputation[low_reputation_unused] *= (1-self.beta)                                                     # pardoning
             self.reputation[low_reputation_unused] += self.mu*self.beta
             #assert not np.isnan(self.reputation).any() , "Reputation has nan values after pardoning"
+            if self.check_convergence():                # model is converged
+                #[AA] if the new data has been used for training at least once, then we can break out of the loop
+                #otherwise, we need to continue training on the new data
+                flag = 1                                                                                          # need to break out of everything
+                print("Early stopping training: convergence")
+                break
 
             if flag : # if budget exceeded or converged, break
                 print("Early stopping training")
@@ -415,3 +419,6 @@ class Client():
     #         self.test(self.dataLoader)
     def getDelta(self):
         return self.stateChange
+
+    def __lt__(self, other):
+        return self.cid < other.cid
