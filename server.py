@@ -118,6 +118,11 @@ class Server():
         #		P\left( \bigcap_{i=i}^2 \frac{f'_i(S)-f'_i(s)}{\sigma_i} \leq 0\right) \geq \prod_{i=1}^2 \left(1-\frac{\sigma_i^2}{\sigma_i^2+(f'_i(s)-\mu_0)^2}\right)
         self.prob_loss    = (1-s1**2/(s1**2 + (mu1 - f1)**2)) 
         self.prob_battery = (1-s2**2/(s2**2 + (mu2 - f2)**2))
+        #if inf then 1
+        if not np.isfinite(self.prob_loss):
+            self.prob_loss = 1
+        if not np.isfinite(self.prob_battery):
+            self.prob_battery = 1
         self.prob_dominated = self.prob_loss*self.prob_battery
 
         print("Clients selected this round are:",[c.cid for c in self.selected_clients])

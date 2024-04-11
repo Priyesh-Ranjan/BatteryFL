@@ -91,7 +91,7 @@ class Client():
         if prev_expenditure == 0:
             future_battery = self.battery - self.round_budget
         else:
-            future_battery = self.battery - prev_expenditure - self.upload -self.download
+            future_battery = max(0,self.battery - prev_expenditure - self.upload -self.download)
         return loss_val, self.battery, future_battery                                   # return L_t; b_t and b_(t+1)
         
     def perform_task(self):                                                                               # Deciding what to do
@@ -106,12 +106,16 @@ class Client():
                 self.train()                                                                               # Train
                 self.update()                                                                              # If training happened then upload
         else :
+            self.battery = 0
             print("Client",self.cid,"is out of battery!")
         print("Clients training budget is", self.training_budget)
         print("Clients collection budget is", self.collection_budget)
         print("Client total energy spent is", initial_battery - self.battery)
         if self.collection_budget + self.training_budget + self.upload > self.round_budget:
             assert False, "Client {} has exceeded the round budget".format(self.cid)
+        if self.training_budget + self. collection_budget < self.training:
+            self.battery = 0
+
     
     def check_convergence(self):                                                                # Returns 1 if model has converged, 0 otherwise
         #TODO: [AA] the class frequency should not be computed from scratch every time, it can be easily cached ad updated
@@ -209,7 +213,7 @@ class Client():
         return training_indices
 
     def train(self):
-        inner_epochs = int((self.round_budget-self.collection_budget - self.upload)/(self.training_size*self.training))            # How many rounds you can train on the given budget
+        inner_epochs = min(10,int((min(self.round_budget,self.battery)-self.collection_budget - self.upload)/(self.training_size*self.training)))            # How many rounds you can train on the given budget
         print("Starting training")    
         print(f"{inner_epochs} rounds of training can be done \n")
         print("")
@@ -233,13 +237,9 @@ class Client():
             ind = 0; 
             for batch_index, (data, target) in enumerate(loader):
                 # if budget exceeded
-                if self.training_budget + (self.batch_size)*self.training +self.upload +self.collection_budget> self.round_budget: 
+                if self.training_budget + (self.batch_size)*self.training +self.upload +self.collection_budget> min(self.round_budget, self.battery): 
                     flag = 1                                                                                          
                     break
-                if self.check_convergence():                # model is converged
-                    #[AA] if the new data has been used for training at least once, then we can break out of the loop
-                    #otherwise, we need to continue training on the new data
-                    flag = 1                                                                                          # need to break out of everything
                 data = data.to(self.device)                                                                       # From here......
                 target = target.to(self.device)
                 self.optimizer.zero_grad()
@@ -258,8 +258,12 @@ class Client():
                 torch.cuda.empty_cache()        
                 self.bottom_slice = self.top_slice                                               # Bottom slice is updated for the next round of collection
 
+            if self.check_convergence():                # model is converged
+                #[AA] if the new data has been used for training at least once, then we can break out of the loop
+                #otherwise, we need to continue training on the new data
+                flag = 1                                                                                          # need to break out of everything
+                break
             self.isTrained = True
-            self.model.cpu()  ## avoid occupying gpu when idle
             #TODO [AA] : this sometimes reports less samples
             # I fixed it
             print("Client trained on",ind,"samples.")
@@ -279,6 +283,7 @@ class Client():
             if flag : # if budget exceeded or converged, break
                 print("Early stopping training")
                 break
+        self.model.cpu()  ## avoid occupying gpu when idle
         self.dataset = None
         
     def collect_data(self):                                                                         # collects data
@@ -295,7 +300,7 @@ class Client():
                     #print all the conditions
                     print(f"Collection stopped: Top slice = {self.top_slice},  collection budget = {self.collection_budget}, convergence = {self.check_convergence()}, diversity = {self.check_diversity(0, self.top_slice)}")
                     break
-            if int((self.round_budget-self.collection_budget-self.collection - self.upload)/(self.training_size*self.training)) == 0:
+            if int((min(self.battery,self.round_budget)-self.collection_budget-self.collection - self.upload)/(self.training_size*self.training)) == 0:
                 break
             self.collection_budget += self.collection                                                         # subtracting the battery spent from the budget +
             if np.random.random() <= self.prob:                                                               # if random number between (0,1) generates > collection probability
@@ -405,6 +410,7 @@ class Client():
         print("Client",self.cid,"sending model to the server \n")
         print("\n")
         self.battery -= (self.upload + self.training_budget + self.collection_budget)      # battery reduces by upload battery amount
+        self.battery = max(0,self.battery)                                                 # battery can't be negative
 
     #         self.test(self.dataLoader)
     def getDelta(self):

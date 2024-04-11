@@ -119,6 +119,9 @@ def main(args):
         if not(server.do()):
             print('No clients have any battery left')
             break
+        if step > 40:
+            #to avoid endless loops
+            break
         writer.add_scalar('Server/loss', loss, global_step = step)
         writer.add_scalar('Server/accuracy', accuracy, global_step = step)
         writer.add_scalar('Server/F1', F1, global_step = step)
