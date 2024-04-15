@@ -114,7 +114,7 @@ class Client():
         if self.collection_budget + self.training_budget + self.upload > self.round_budget:
             pass
             #assert False, "Client {} has exceeded the round budget".format(self.cid)
-        if self.training_budget + self. collection_budget < self.training:
+        if self.training_budget + self.collection_budget < self.training:
             self.battery = 0
 
     
