@@ -168,7 +168,10 @@ class Client():
                 r = self.reputation[idx]                                                                             # reputation of those samples
                 req = max(0, (required_samples//num_classes) - num)                                                  # required samples (looks weird because of ceiling fn)
                 if len(idx) :                                                                                        # If those number of samples exist
-                    samples = np.random.choice(idx, req, p = np.exp(r/self.gamma)/np.sum(np.exp(r/self.gamma)))      # then pick with the probability
+                    probs = np.exp(r/self.gamma)/np.sum(np.exp(r/self.gamma))                                         # probabilities of each sample
+                    #substitute nan with min value, if all are nan then substitute with 1/len
+                    probs[np.isnan(probs)] = min(probs[~np.isnan(probs)]) if len(probs[~np.isnan(probs)]) > 0 else 1/len(probs)
+                    samples = np.random.choice(idx, req, p = probs)      # then pick with the probability
                     indices.extend(samples)
         else :
             """This if else is here because in some cases, data is not collected and only training happens
