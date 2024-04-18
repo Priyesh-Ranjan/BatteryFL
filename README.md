@@ -61,10 +61,6 @@ typing_extensions        4.10.0
 wrapt                    1.16.0
 ```
 
-! git clone repository
-
-cd EIFFEL/
-
 ```
 !python main.py --num_clients 10 --optimizer Adam --lr 0.01 --momentum 0.5 --AR fednova --dataset mnist --loader_type dirichlet --experiment_name "Battery" --client_selection ours --device cuda --batch_size 64 --test_batch_size 2048 --collection_size 400 --collection_battery_ratio 1 --alpha 0.25 --beta 0.25 --gamma 1 --mu 0.5 --training_size 500 --entropy_threshold 0.5 --collection_success_chance 0.95 --sample_selection loss --round_budget 10 --starting_battery 1
 
