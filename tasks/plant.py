@@ -35,10 +35,10 @@ def getDataset():
 
 def basic_loader(num_clients, loader_type):
     dataset = getDataset()
-    return loader_type(num_clients, dataset)
+    return loader_type(num_clients, dataset, alpha=dist)
 
 
-def train_dataloader(num_clients, loader_type='iid', store=True, path='./data/loader.pk'):
+def train_dataloader(num_clients, loader_type='iid', store=True, path='./data/loader.pk', dist=0.9):
     assert loader_type in ['iid', 'byLabel',
                            'dirichlet'], 'Loader has to be one of the  \'iid\',\'byLabel\',\'dirichlet\''
     if loader_type == 'iid':
@@ -54,10 +54,10 @@ def train_dataloader(num_clients, loader_type='iid', store=True, path='./data/lo
                 loader = pickle.load(handle)
         except:
             print('loader not found, initialize one')
-            loader = basic_loader(num_clients, loader_type)
+            loader = basic_loader(num_clients, loader_type, dist)
     else:
         print('initialize a data loader')
-        loader = basic_loader(num_clients, loader_type)
+        loader = basic_loader(num_clients, loader_type, dist)
     if store:
         with open(path, 'wb') as handle:
             pickle.dump(loader, handle)
