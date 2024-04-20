@@ -40,7 +40,7 @@ def main(args):
     if args.dataset == 'mnist':
         from tasks import mnist
         trainData = mnist.train_dataloader(args.num_clients, loader_type=args.loader_type, path=args.loader_path,
-                                           store=False)
+                                           store=False, dist=args.dirichlet_value)
         testData = mnist.test_dataloader(args.test_batch_size)
         Net = mnist.Net
         criterion = F.cross_entropy
@@ -64,7 +64,7 @@ def main(args):
     elif args.dataset == 'plant':
         from tasks import plant
         trainData = plant.train_dataloader(args.num_clients, loader_type=args.loader_type, path=args.loader_path,
-                                          store=False)
+                                          store=False, dist=args.dirichlet_value)
         testData = plant.test_dataloader(args.test_batch_size)
         Net = plant.Net
         criterion = F.cross_entropy
