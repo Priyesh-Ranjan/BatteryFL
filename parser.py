@@ -42,6 +42,7 @@ def parse_args():
     parser.add_argument("--entropy_threshold", type=float, default = 0.5)
     parser.add_argument("--round_budget", type=float, default = 10)
     parser.add_argument("--starting_battery", type=float, default = 100)
+    parser.add_argument("--dirichlet_value",type=float,default = 0.9)
 
     args = parser.parse_args()
 
