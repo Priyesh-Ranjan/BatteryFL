@@ -61,9 +61,9 @@ def getDataset():
     return dataset
 
 
-def basic_loader(num_clients, loader_type):
+def basic_loader(num_clients, loader_type, dist):
     dataset = getDataset()
-    return loader_type(num_clients, dataset)
+    return loader_type(num_clients, dataset, alpha=dist)
 
 
 def train_dataloader(num_clients, loader_type='iid', store=False, path='./data/loader.pk', dist=0.9):
@@ -73,7 +73,7 @@ def train_dataloader(num_clients, loader_type='iid', store=False, path='./data/l
     elif loader_type == 'byLabel':
         loader_type = byLabelLoader
     elif loader_type == 'dirichlet':
-        loader_type = dirichletLoader(alpha=dist)
+        loader_type = dirichletLoader
 
     if store:
         try:
@@ -81,10 +81,10 @@ def train_dataloader(num_clients, loader_type='iid', store=False, path='./data/l
                 loader = pickle.load(handle)
         except:
             print('Loader not found, initializing one')
-            loader = basic_loader(num_clients, loader_type)
+            loader = basic_loader(num_clients, loader_type, dist)
     else:
         print('Initialize a data loader')
-        loader = basic_loader(num_clients, loader_type)
+        loader = basic_loader(num_clients, loader_type, dist)
     if store:
         with open(path, 'wb') as handle:
             pickle.dump(loader, handle)
