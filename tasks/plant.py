@@ -33,9 +33,12 @@ def getDataset():
     return dataset
 
 
-def basic_loader(num_clients, loader_type):
+def basic_loader(num_clients, loader_type, dist):
     dataset = getDataset()
-    return loader_type(num_clients, dataset, alpha=dist)
+    if loader_type == dirichletLoader :
+        return loader_type(num_clients, dataset, alpha=dist)
+    else :
+        return loader_type(num_clients, dataset)
 
 
 def train_dataloader(num_clients, loader_type='iid', store=True, path='./data/loader.pk', dist=0.9):
