@@ -1,5 +1,5 @@
-# EIFFEL
-Code for the paper - EIFFEL<br>
+# BatteryFL
+Code for the paper - BatteryFL: Battery-Aware Federated Learning<br>
 
 Dependencies:
 ```
